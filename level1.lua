@@ -16,18 +16,21 @@ local spinIt;
 local lvlText
 local device = {}
 local ball = {}
-local object = {}
+local dynamicObject = {}
+local staticObject = {}
 local target = {}
 local numOfTarget = 5
-local numOfObject = 2
+local numOfDynamicObject = 2
+local numOfStaticObject = 2
 local score = 0
 local totalCollisions = 0
 
-local function createObject()
+
+local function createDynamicObject()
 	local view = scene.view
-	local object = display.newImageRect("images/platform.png", 100, 25);
+	local dynamicObject = display.newImageRect("images/platform.png", 100, 25);
 	
-	function object:touch(e)
+	function dynamicObject:touch(e)
 			local t = e.target
 			local phase = e.phase
 			
@@ -76,10 +79,10 @@ local function createObject()
 			return true
 		end
 
-	object:addEventListener("touch",object)
-	view:insert(object)	
+	dynamicObject:addEventListener("touch",dynamicObject)
+	view:insert(dynamicObject)	
 	
-	return object	
+	return dynamicObject	
 end
 
 
@@ -191,15 +194,32 @@ function scene:createScene(e)
 	view:insert(ball)
 	--------------------------------------
 
-	----------------Objects----------------  
-	for i=1 ,numOfObject do
-		object[i] = createObject()
-		object[i].x = _W * i/3
-		object[i].y = _H * 0.5
+	-----------dynamicObjects-------------  
+	for i=1 ,numOfDynamicObject do
+		dynamicObject[i] = createDynamicObject()
+		dynamicObject[i].x = _W * i/3
+		dynamicObject[i].y = _H * 0.5
 	
-		physics.addBody(object[i],"static",{density = 10, friction = 0.5, bounce = 1})
+		physics.addBody(dynamicObject[i],"static",{density = 10, friction = 0.5, bounce = 1})
 	
-		view:insert(object[i]);
+		view:insert(dynamicObject[i]);
+	end
+	---------------------------------------
+	
+	-----------staticObjects-------------  
+	for i=1 ,numOfStaticObject do
+		staticObject[i] = display.newImageRect("images/platform.png", 200, 25);
+		if i == 1 then
+			staticObject[i].x = _W * 0.5
+			staticObject[i].y = _H 
+		elseif i == 2 then	
+			staticObject[i].x = _W * 0.5
+			staticObject[i].y = 0
+		end
+	
+		physics.addBody(staticObject[i],"static",{density = 10, friction = 0.5, bounce = 1})
+	
+		view:insert(staticObject[i]);
 	end
 	---------------------------------------
 	
@@ -219,6 +239,12 @@ function scene:createScene(e)
 	end
 	---------------------------------------
 end -- end of createScene
+
+
+--function removeAllListeners(obj)
+  --obj._functionListeners = nil
+  --obj._tableListeners = nil
+--end
 
 
 function scene:enterScene(e)
@@ -264,6 +290,11 @@ function scene:enterScene(e)
 				-- damp the device and make it invisible
 				device.linearDamping = 1000
 				device.isVisible = false
+				
+				-- Remove event listeners for the dynamic objects
+				for i=1 ,numOfDynamicObject do
+					dynamicObject[i]._tableListeners = nil
+				end
 				
 				display.getCurrentStage():setFocus(nil)
 				self.hasFocus = false;
