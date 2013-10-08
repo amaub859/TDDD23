@@ -8,7 +8,10 @@ local storyboard = require("storyboard");--Include the storyboard library
 local mydata = require("mydata")
 
 mydata.lvl = 1
-mydata.reloads = 0
+mydata.lvlUnlocked = 1
+mydata.reload = 0
+mydata.score = 0
+mydata.collision = 0
 
 display.setStatusBar(display.HiddenStatusBar);
 

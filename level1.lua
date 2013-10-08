@@ -20,11 +20,10 @@ local dynamicObject = {}
 local staticObject = {}
 local target = {}
 local numOfTarget = 5
-local numOfDynamicObject = 2
+local numOfDynamicObject = 3
 local numOfStaticObject = 2
-local score = 0
-local totalCollisions = 0
 
+mydata.lvl = 1
 
 local function createDynamicObject()
 	local view = scene.view
@@ -44,7 +43,7 @@ local function createDynamicObject()
 				t.x1 = e.x
                 t.y1 = e.y
 				
-				print("began")
+				--print("began")
 				
 			elseif(self.hasFocus) then
 				if(e.phase == "moved") then
@@ -83,6 +82,21 @@ local function createDynamicObject()
 	view:insert(dynamicObject)	
 	
 	return dynamicObject	
+end
+
+
+local function onButtonNext(e)
+	if e.phase == "ended" then
+		timer.performWithDelay(20, nextLevel)
+	end
+	return true
+end
+
+local function onButtonHome(e)
+	if e.phase == "ended" then
+		timer.performWithDelay(20, home)
+	end
+	return true
 end
 
 
@@ -145,7 +159,7 @@ function scene:createScene(e)
 	
 	--------------scoreText---------------
 	local font = "HelveticaNeue" or native.systemFont;
-	levelScore = display.newText(string.format("Score: %1d", score),0,0,font,24);
+	levelScore = display.newText(string.format("Score: %1d", mydata.score),0,0,font,24);
     levelScore:setTextColor(0,0,0);
     levelScore.x = 50;
     levelScore.y = 40;
@@ -153,7 +167,7 @@ function scene:createScene(e)
     --------------------------------------
     
     -----------totalCollisions------------
-    collisionText = display.newText(string.format("Collisions: %1d", totalCollisions),0,0,font,24)
+    collisionText = display.newText(string.format("Collisions: %1d", mydata.collision),0,0,font,24)
     collisionText:setTextColor(0,0,0)
     collisionText.x = 70
     collisionText.y = 60
@@ -171,6 +185,7 @@ function scene:createScene(e)
 		filter = 
 		{
 			categoryBits = 2, --So that the device and ball don't collide with each other
+			maskBits = 1 --So that the ball collides with the ground (which is 1 by default)
 		}
 	})
 	
@@ -200,8 +215,6 @@ function scene:createScene(e)
 		dynamicObject[i].x = _W * i/3
 		dynamicObject[i].y = _H * 0.5
 	
-		physics.addBody(dynamicObject[i],"static",{density = 10, friction = 0.5, bounce = 1})
-	
 		view:insert(dynamicObject[i]);
 	end
 	---------------------------------------
@@ -217,7 +230,7 @@ function scene:createScene(e)
 			staticObject[i].y = 0
 		end
 	
-		physics.addBody(staticObject[i],"static",{density = 10, friction = 0.5, bounce = 1})
+		physics.addBody(staticObject[i],"static",{density = 10, friction = 0, bounce = 1})
 	
 		view:insert(staticObject[i]);
 	end
@@ -230,7 +243,7 @@ function scene:createScene(e)
 		target[i].y = math.random(0, _H)
 		target[i].type = "target" .. tostring(i)
 		
-		print(target[i].type)
+		--print(target[i].type)
 		
 		physics.addBody(target[i],"static",{density = 10, friction = 0.5, bounce = 1})
 		target[i].isSensor = true
@@ -238,6 +251,67 @@ function scene:createScene(e)
 		view:insert(target[i])
 	end
 	---------------------------------------
+	
+	------------Level Completed------------ 
+	frameGroup = display.newGroup()
+	
+	local frame = display.newImageRect("images/background_sky.png",300,200)
+	local frameText = display.newText("Level Completed", 0, 0, native.systemFont, 24)
+	frameText:setTextColor(0,0,0)
+	
+	star1 = display.newImageRect("images/star.png",50,50)
+	local star1Unlocked = display.newImageRect("images/star2.png",50,50)
+	star2 = display.newImageRect("images/star.png",50,50)
+	local star2Unlocked = display.newImageRect("images/star2.png",50,50)
+	star3 = display.newImageRect("images/star.png",50,50)
+	local star3Unlocked = display.newImageRect("images/star2.png",50,50)
+	
+	buttonNext = display.newImageRect("images/btn_arrow.png",40,40)
+	buttonNext:addEventListener("touch",onButtonNext)
+	
+	buttonHome = display.newImageRect("images/btn_arrow.png",40,40)
+	buttonHome:addEventListener("touch",onButtonHome)
+	
+	frameText.x = 0
+	frameText.y = -80
+	
+	star3.x = 80
+	star3.y = 0
+	
+	star3Unlocked.x = 80
+	star3Unlocked.y = 0
+	
+	star1.x = -80
+	star1.y = 0
+	
+	star1Unlocked.x = -80
+	star1Unlocked.y = 0
+	
+	buttonNext.x = 80
+	buttonNext.y = 80
+	
+	buttonHome.x = -80
+	buttonHome.y = 80
+	
+	frameGroup:insert(frame)
+	frameGroup:insert(frameText)
+	frameGroup:insert(star1Unlocked)
+	frameGroup:insert(star2Unlocked)
+	frameGroup:insert(star3Unlocked)
+	frameGroup:insert(star1)
+	frameGroup:insert(star2)
+	frameGroup:insert(star3)
+	frameGroup:insert(buttonNext)
+	frameGroup:insert(buttonHome)
+	
+	frameGroup.x = _W *0.5
+	frameGroup.y = _H *0.5
+	
+	frameGroup.alpha = 0
+	
+	view:insert(frameGroup)
+	---------------------------------------
+	
 end -- end of createScene
 
 
@@ -277,6 +351,11 @@ function scene:enterScene(e)
 				--move the device in y-axis
 				self.y = (e.y - e.yStart) + self.oldY;
 				
+				if self.y < 0 then
+					self.y = 0
+				elseif self.y > _H then
+					self.y = _H
+				end
 				--print("moved")
 						
 			elseif(e.phase == "ended" or e.phase == "cancelled") then
@@ -291,8 +370,11 @@ function scene:enterScene(e)
 				device.linearDamping = 1000
 				device.isVisible = false
 				
-				-- Remove event listeners for the dynamic objects
+				-- add physic body to the dynamic objects
 				for i=1 ,numOfDynamicObject do
+					physics.addBody(dynamicObject[i],"static",{density = 10, friction = 0.5, bounce = 1})
+				
+					-- Remove event listeners for the dynamic objects
 					dynamicObject[i]._tableListeners = nil
 				end
 				
@@ -309,8 +391,8 @@ function scene:enterScene(e)
 	
 	function onCollision(self, e)
 	 	if ( e.phase == "began" ) then
-			totalCollisions = totalCollisions + 1
-			collisionText.text = "Collisions: " .. totalCollisions
+			mydata.collision  = mydata.collision  + 1
+			collisionText.text = "Collisions: " .. mydata.collision 
 		end
 	 	
 	 	for i=1 ,numOfTarget do	
@@ -322,15 +404,29 @@ function scene:enterScene(e)
 				
 			elseif e.target.type == "ball" and e.other.type == "target" .. tostring(i)  then
 				target[i]:removeSelf()	
-				score = score + 1
-				levelScore.text = "Score: " .. score
+				mydata.score = mydata.score + 1
+				levelScore.text = "Score: " .. mydata.score
 			end
 		end
 	   
-		if score >= 3 then
-			mydata.lvl = mydata.lvl + 1
-			lvlText.text = string.format("Level: %1d", mydata.lvl)
-			timer.performWithDelay(20, nextLevel)
+		if mydata.score >= 3 then
+			
+			frameGroup.alpha = 1
+			star1.alpha = 0
+			ball.linearDamping = 5
+			
+			if mydata.reload < 2 then
+				star2.alpha = 0
+			end
+			
+			if mydata.collision < 10 then
+				star3.alpha = 0
+			end
+			
+			if mydata.lvlUnlocked <= mydata.lvl then
+				mydata.lvlUnlocked = 2
+			end
+			
 		end
 	end
 	
@@ -343,7 +439,15 @@ function scene:enterScene(e)
 	end
 	
 	function nextLevel()
+		storyboard.removeScene("nextLevel")
 		storyboard.gotoScene("nextLevel", {time =250, effect="crossFade"})
+		--print("next level")
+	end
+	
+	function home()
+		storyboard.removeScene("mainMeny")
+		storyboard.removeScene("nextLevel")
+		storyboard.gotoScene("mainMeny", {time =250, effect="crossFade"})
 		--print("next level")
 	end
 

@@ -86,7 +86,7 @@ function scene:createScene(e)
     
   
 	function playButton:tap(e)
-		storyboard.gotoScene("level1", "fade", 400)
+		storyboard.gotoScene("nextLevel", "fade", 400)
 	end
 	
 	playButton:addEventListener("tap",playButton);

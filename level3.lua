@@ -18,10 +18,12 @@ local device = {}
 local ball = {}
 local object = {}
 local target = {}
-local numOfTarget = 4
-local numOfObject = 2
+local numOfTarget = 5
+local numOfObject = 1
 local score = 0
 local totalCollisions = 0
+
+mydata.lvl = 3
 
 local function createObject()
 	local view = scene.view
@@ -41,7 +43,7 @@ local function createObject()
 				t.x1 = e.x
                 t.y1 = e.y
 				
-				print("began")
+				--print("began")
 				
 			elseif(self.hasFocus) then
 				if(e.phase == "moved") then
@@ -210,7 +212,7 @@ function scene:createScene(e)
 		target[i].y = math.random(0, _H)
 		target[i].type = "target" .. tostring(i)
 		
-		print(target[i].type)
+		--print(target[i].type)
 		
 		physics.addBody(target[i],"static",{density = 10, friction = 0.5, bounce = 1})
 		target[i].isSensor = true
@@ -297,7 +299,11 @@ function scene:enterScene(e)
 		end
 	   
 		if score >= 3 then
-			mydata.lvl = mydata.lvl + 1
+		
+			if mydata.lvlUnlocked <= mydata.lvl then
+				mydata.lvlUnlocked = 4
+			end
+			
 			lvlText.text = string.format("Level: %1d", mydata.lvl)
 			timer.performWithDelay(20, nextLevel)
 		end
@@ -312,6 +318,7 @@ function scene:enterScene(e)
 	end
 	
 	function nextLevel()
+		storyboard.removeScene("nextLevel")
 		storyboard.gotoScene("nextLevel", {time =250, effect="crossFade"})
 		--print("next level")
 	end

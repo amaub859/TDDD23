@@ -85,6 +85,8 @@ function scene:createScene(e)
 	
 	function reload(e)
 		if e.phase == "began" then
+			mydata.score = 0
+			mydata.reload = mydata.reload + 1
 			storyboard.removeScene("level"..mydata.lvl)
 			storyboard.gotoScene("level"..mydata.lvl)
 		end
