@@ -107,7 +107,7 @@ function scene:createScene(e)
 					--levelButton[e.target.tag].alpha = 0
 					--locked.alpha = 0
 					--print(e.target.tag)
-					print(mydata.lvlUnlocked)
+					--print(mydata.lvlUnlocked)
 					--display.getCurrentStage():setFocus(self);
 					--self.hasFocus = true;
 

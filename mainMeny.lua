@@ -92,7 +92,7 @@ function scene:createScene(e)
 	playButton:addEventListener("tap",playButton);
 	
 	function optionButton:tap(e)
-		storyboard.gotoScene("options", "fade", 400)
+		storyboard.gotoScene("shop", "fade", 400)
 	end
 	
 	optionButton:addEventListener("tap",optionButton);
@@ -128,7 +128,7 @@ function scene:exitScene(e)
 	audio.stop(1)
 	audio.dispose(startMusic)
 	startMusic = nil
-	print("exitScene")
+	--print("exitScene")
 end
 
 scene:addEventListener("createScene", scene);
@@ -137,4 +137,4 @@ scene:addEventListener("exitScene", scene);
 --There are more events you can listen for;
 --See the Corona docs
 
-return scene
+return scenee

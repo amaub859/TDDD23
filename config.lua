@@ -1,30 +1,120 @@
-application =
-{
-	content =
-	{
-		fps = 60,			-- Desired frame rate 
-		width = 320,		-- Desired width of the application
-		height = 480,		-- Desired height of the application
-		
-		-- Scaling mode, should the screen not fit the width and height exactly
-		scale = "letterbox",
-		--[[
-		Other options include:
-		"none"			no dynamic content scaling
-		"letterbox"		uniform scaling of content with black bars surrounding content
-		"zoomEven"		scaling of content to fill screen while preserving aspect ratio (some content may be offscreen)
-		"zoomStretch"	scaling of content to fill screen by stretching to fit height and width (results in distorted imagery)
-		--]]
-		
-		--Suffixes for images so that the right image can loaded according to platform
-		imageSuffix =
+if string.sub(system.getInfo("model"),1,4) == "iPad" then
+    application = 
+    {
+        content =
         {
-            ["@1-5x"] = 1.5, -- Various Android phones.
-            ["@2x"] = 2,    -- iPhone 4 and higher, iPod touch, iPad1, and iPad2
-            ["@3x"] = 3,    -- Various Android tablets
-            ["@4x"] = 4,    -- iPad 3+
+            width = 360,
+            height = 480,
+            scale = "letterBox",
+            xAlign = "center",
+            yAlign = "center",
+            imageSuffix = 
+            {
+                ["@2x"] = 1.5,
+                ["@4x"] = 3.0,
+            },
+        },
+        notification = 
+        {
+            iphone = {
+                types = {
+                    "badge", "sound", "alert"
+                }
+            }
         }
-	
-	},
-}
--- For more, see http://developer.anscamobile.com/content/configuring-projects
+    }
+
+elseif string.sub(system.getInfo("model"),1,2) == "iP" and display.pixelHeight > 960 then
+    application = 
+    {
+        content =
+        {
+            width = 320,
+            height = 568,
+            scale = "letterBox",
+            xAlign = "center",
+            yAlign = "center",
+            imageSuffix = 
+            {
+                ["@2x"] = 1.5,
+                ["@4x"] = 3.0,
+            },
+        },
+        notification = 
+        {
+            iphone = {
+                types = {
+                    "badge", "sound", "alert"
+                }
+            }
+        }
+    }
+
+elseif string.sub(system.getInfo("model"),1,2) == "iP" then
+    application = 
+    {
+        content =
+        {
+            width = 320,
+            height = 480,
+            scale = "letterBox",
+            xAlign = "center",
+            yAlign = "center",
+            imageSuffix = 
+            {
+                ["@2x"] = 1.5,
+                ["@4x"] = 3.0,
+            },
+        },
+        notification = 
+        {
+            iphone = {
+                types = {
+                    "badge", "sound", "alert"
+                }
+            }
+        }
+    }
+elseif display.pixelHeight / display.pixelWidth > 1.72 then
+    application = 
+    {
+        content =
+        {
+            width = 320,
+            height = 570,
+            scale = "letterBox",
+            xAlign = "center",
+            yAlign = "center",
+            imageSuffix = 
+            {
+                ["@2x"] = 1.5,
+                ["@4x"] = 3.0,
+            },
+        },
+    }
+else
+    application = 
+    {
+        content =
+        {
+            width = 320,
+            height = 512,
+            scale = "letterBox",
+            xAlign = "center",
+            yAlign = "center",
+            imageSuffix = 
+            {
+                ["@2x"] = 1.5,
+                ["@4x"] = 3.0,
+            },
+        },
+        notification = 
+        {
+            iphone = {
+                types = {
+                    "badge", "sound", "alert"
+                }
+            }
+        }
+    }
+end
