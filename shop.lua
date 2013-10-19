@@ -342,4 +342,4 @@ scene:addEventListener("exitScene", scene);
 --There are more events you can listen for;
 --See the Corona docs
 
-return scenern scene
+return scene
