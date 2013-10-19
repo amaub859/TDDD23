@@ -18,15 +18,17 @@ end
 local bar
 local spinIt
 local numOfStars = 40
-local animationSprite = {} 
+local animationSprite = {}
+local count = 1 
 
 function scene:createScene(e)	
 
 	local view = self.view
 	
-	local background = display.newRect(0, 0, _W, _H)
-	background:setFillColor(0,0,0)
-	view:insert(background)
+	local background = display.newImageRect("images/background/bg.png",570,360)
+	background.x = _W * 0.5;
+	background.y = _H * 0.5;
+	view:insert(background);
 	
 	for i=1 ,numOfStars do
 		animationSprite[i] = display.newSprite( myImageSheet , sheetInfo:getSequenceData() )
@@ -39,18 +41,21 @@ function scene:createScene(e)
 		view:insert(animationSprite[i])
 	end
 	
+	local background2 = display.newImageRect("images/background/bg2.png",570,360)
+	background2.x = _W * 0.5;
+	background2.y = _H * 0.5;
+	view:insert(background2);
+	
 	if music then
 		audio.seek(76000, mydata.startMusic)
 		audio.play(mydata.startMusic, {channel=1, loops=-1,fadein=2000})
 		audio.fade( { channel=1, time=2000, volume=1 } )
 	end
 	
-	
-	local font = "HelveticaNeue" or native.systemFont;
-	local txt = display.newText("Meny",0,0,font,24);
-    txt:setTextColor(0,0,0);
-    txt.x = _W * 0.5;
-    txt.y = _H * 0.5 - 120;
+	local texttop = display.newImageRect("images/text.png",150,50)
+	texttop.x = _W * 0.5
+	texttop.y = _H * 0.5 -120 
+	view:insert(texttop);
     
     -------------------------------------------------------
     --Create a button class that will create button objects
@@ -58,16 +63,25 @@ function scene:createScene(e)
 	local Button = {};
 	Button.new = function(params)
 	
-		local btn = display.newGroup();
-		
-		local offIMG = params and params.off or "images/grass_bottom.png";
-		local onIMG = params and params.on or "images/background_sky.png";
+		local btn = display.newGroup()
+
+		if count == 1 then		
+			 offIMG = params and params.off or "images/buttons/StartButton.png"
+			 onIMG = params and params.on or "images/buttons/StartButtonIn.png"
+		elseif count == 2 then
+			 offIMG = params and params.off or "images/buttons/SettingsButton.png"
+			 onIMG = params and params.on or "images/buttons/SettingsButtonIn.png"
+		elseif count == 3 then
+			 offIMG = params and params.off or "images/buttons/CreditsButton.png"
+			 onIMG = params and params.on or "images/buttons/CreditsButtonIn.png"
+		end
+
 		
 		local off = display.newImageRect(offIMG, 150, 50);
 		local on = display.newImageRect(onIMG, 150, 50);
 		
 		--Set the alpha of the on state to 0
-		on.alpha = 0;
+		on.alpha = 0
 		
 		--Insert the objects into the group
 		--insert on second so that it appears on top
@@ -99,14 +113,17 @@ function scene:createScene(e)
 	--end Button class declaration
 	-------------------------------------------------------
 
+	count = 1
 	local playButton = Button.new()
 	playButton.x = _W * 0.5
 	playButton.y = _H * 0.5 -70 
 	
+	count = 2
 	local optionButton = Button.new()
 	optionButton.x = _W * 0.5
 	optionButton.y = _H * 0.5
 	
+	count = 3
 	local creditButton = Button.new()
 	creditButton.x = _W * 0.5
 	creditButton.y = _H * 0.5 + 70
@@ -132,7 +149,6 @@ function scene:createScene(e)
 	
 	creditButton:addEventListener("tap",creditButton);
 	
-    view:insert(txt);
     view:insert(playButton);
     view:insert(optionButton);
     view:insert(creditButton);

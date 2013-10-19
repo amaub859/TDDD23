@@ -80,20 +80,20 @@ local function unlock()
 		------------Level Completed------------ 
 	local frameGroup = display.newGroup()
 	
-	local frame = display.newImageRect("images/background_sky.png",300,200)
+	local frame = display.newImageRect("images/background.png",300,200)
 	local frameText = display.newText("Level Completed", 0, 0, native.systemFont, 24)
 	frameText:setTextColor(0,0,0)
 	
 	star1 = display.newImageRect("images/star2.png",50,50)
 
-	buttonGetNow = display.newImageRect("images/btn_arrow.png",40,40)
+	buttonGetNow = display.newImageRect("images/nextBtn.png",40,40)
 	buttonGetNow:addEventListener("touch",onButtonGetNow)
 	
 	buttonBuy = display.newImageRect("images/star2.png",40,40)
 	buttonBuy:addEventListener("touch",onButtonBuy)
 	buttonBuy.alpha = 0
 	
-	buttonExit = display.newImageRect("images/btn_arrow.png",40,40)
+	buttonExit = display.newImageRect("images/nextBtn.png",40,40)
 	buttonExit:addEventListener("touch",onButtonExit)
 
 	frameText.x = 0
@@ -342,4 +342,4 @@ scene:addEventListener("exitScene", scene);
 --There are more events you can listen for;
 --See the Corona docs
 
-return scene
+return scenern scene
