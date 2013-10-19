@@ -14,7 +14,7 @@ end
 
 local function createObject()
 	local view = scene.view
-	local object = display.newImageRect("images/platform.png", 100, 25);
+	local object = display.newImageRect("images/background.png", 100, 25);
 	
 	return object
 end
