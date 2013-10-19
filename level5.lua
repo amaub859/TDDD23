@@ -48,9 +48,9 @@ local lvlCollisions = 11
 local lvlMonsters = 3
 mydata.lvl = 5
 local lvlNext = 6
-local lvlStar1 = "star10"
-local lvlStar2 = "star11"
-local lvlStar3 = "star12"
+local lvlStar1 = "star13"
+local lvlStar2 = "star14"
+local lvlStar3 = "star15"
 
 local myFont = (platform ~= "Android") and "Manteka" or system.nativeFont;
 
@@ -1040,27 +1040,28 @@ function scene:enterScene(e)
 	
 	
 	function reset()
-		--storyboard.reloadScene() 
-		ball:removeEventListener("collision", ball)
-		display.remove(ball)
-		ball = nil
-		display.remove(device)
-		device = nil
-		
-		resetBall()
-		resetDevice()
-		
-		ball:addEventListener( "touch", shootBall )	
-		ball.collision = onCollision
-		ball:addEventListener("collision", ball)
-		
-		infoBtn:toFront()
-		reloadBtn:toFront()
-		homeBtn:toFront()
-		collisionText:toFront()
-		levelScore:toFront()
-		lvlShotsTxt:toFront()
-		starGroup:toFront()
+		if ball ~= nil then 
+			ball:removeEventListener("collision", ball)
+			display.remove(ball)
+			ball = nil
+			
+			resetBall()
+			ball:addEventListener( "touch", shootBall )	
+			ball.collision = onCollision
+			ball:addEventListener("collision", ball)
+			
+			display.remove(device)
+			device = nil
+			resetDevice()
+			
+			infoBtn:toFront()
+			reloadBtn:toFront()
+			homeBtn:toFront()
+			collisionText:toFront()
+			levelScore:toFront()
+			lvlShotsTxt:toFront()
+			starGroup:toFront()
+		end
 	end
 	
 	

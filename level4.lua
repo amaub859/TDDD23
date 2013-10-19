@@ -1040,27 +1040,28 @@ function scene:enterScene(e)
 	
 	
 	function reset()
-		--storyboard.reloadScene() 
-		ball:removeEventListener("collision", ball)
-		display.remove(ball)
-		ball = nil
-		display.remove(device)
-		device = nil
-		
-		resetBall()
-		resetDevice()
-		
-		ball:addEventListener( "touch", shootBall )	
-		ball.collision = onCollision
-		ball:addEventListener("collision", ball)
-		
-		infoBtn:toFront()
-		reloadBtn:toFront()
-		homeBtn:toFront()
-		collisionText:toFront()
-		levelScore:toFront()
-		lvlShotsTxt:toFront()
-		starGroup:toFront()
+		if ball ~= nil then 
+			ball:removeEventListener("collision", ball)
+			display.remove(ball)
+			ball = nil
+			
+			resetBall()
+			ball:addEventListener( "touch", shootBall )	
+			ball.collision = onCollision
+			ball:addEventListener("collision", ball)
+			
+			display.remove(device)
+			device = nil
+			resetDevice()
+			
+			infoBtn:toFront()
+			reloadBtn:toFront()
+			homeBtn:toFront()
+			collisionText:toFront()
+			levelScore:toFront()
+			lvlShotsTxt:toFront()
+			starGroup:toFront()
+		end
 	end
 	
 	

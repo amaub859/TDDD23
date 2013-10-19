@@ -38,19 +38,19 @@ local gravityTarget = {}
 local lvlComplete = nil
 local numOfTarget = 3
 local numOfDynamicObject = 0
-local numOfStaticObject = 0
-local numOfMovingObject = 0
+local numOfStaticObject = 2
+local numOfMovingObject = 1
 local numOfGravityTarget = 0
 local anim
 
-local lvlShots = 1
-local lvlCollisions = 3
+local lvlShots = 2
+local lvlCollisions = 5
 local lvlMonsters = 3
-mydata.lvl = 1
-local lvlNext = 2
-local lvlStar1 = "star4"
-local lvlStar2 = "star5"
-local lvlStar3 = "star6"
+mydata.lvl = 6
+local lvlNext = 7
+local lvlStar1 = "star16"
+local lvlStar2 = "star17"
+local lvlStar3 = "star18"
 
 local myFont = (platform ~= "Android") and "Manteka" or system.nativeFont;
 
@@ -76,17 +76,17 @@ local function onButtonHome(e)
 end
 
 
-local function onRestartBtn(e)
+local function onReloadBtn(e)
 	if e.phase == "ended" then
-		timer.performWithDelay(20, restart)
+		timer.performWithDelay(20, reload)
 	end
 	return true
 end
 
 
-local function onReloadBtn(e)
+local function onRestartBtn(e)
 	if e.phase == "ended" then
-		timer.performWithDelay(20, reload)
+		timer.performWithDelay(20, restart)
 	end
 	return true
 end
@@ -131,7 +131,7 @@ end
 local function spawnGravityTargets()
 	local view = scene.view
 	
-	local trgt = display.newImageRect("images/foo.png",20,20)
+	local trgt = display.newImageRect("images/gravityTarget.png",30,30)
 	
 	physics.addBody(trgt,"static",{density = 10, friction = 0.5, bounce = 1})
 	trgt.isSensor = true
@@ -346,7 +346,7 @@ function scene:createScene(e)
 	--audio.setVolume(0.2, {channel = 1})
 	
 	--------------Background--------------
-	local background = display.newImageRect("images/background2.png",_W,_H)
+	local background = display.newImageRect("images/background.png",_W,_H)
 	background.x = _W * 0.5;
 	background.y = _H * 0.5;
 	view:insert(background);
@@ -412,35 +412,30 @@ function scene:createScene(e)
 	
 	-----------staticObjects--------------  
 	for i=1 ,numOfStaticObject do
-		staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25);
 		if i == 1 then
-			staticObject[i].x = _W * 0.5
-			staticObject[i].y = _H 
-		elseif i == 2 then	
-			staticObject[i].x = _W * 0.5
-			staticObject[i].y = 0
-		elseif i == 3 then		
-			staticObject[i].x = _W
+			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)
+			staticObject[i].x = _W * 0.5 
 			staticObject[i].y = _H * 0.5
+			staticObject[i]:rotate(45) 
+		elseif i == 2 then	
+			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)
+			staticObject[i].x = _W * 0.5 - 50
+			staticObject[i].y = _H * 0.5 + 50
+			staticObject[i]:rotate(45)
+		elseif i == 3 then	
+			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)	
+			staticObject[i].x = _W
+			staticObject[i].y = _H * 0.5 + 47
 			staticObject[i]:rotate(90)
+		elseif i == 4 then		
+			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)
+			staticObject[i].x = _W * 0.5
+			staticObject[i].y = _H * 0.5
 		end
 		staticObject[i].type = "staticObject"
 		view:insert(staticObject[i]);
 	end
 	---------------------------------------
-	
-	 ------------gameInfoText--------------
-    gameInfoText = display.newText(string.format("<-- Drag the ball to left!"),0,0,myFont,10)
-    gameInfoText:setTextColor(255,156,0)
-    gameInfoText.alpha = 0
-    
-    view:insert(gameInfoText)
-    
-    aim1 = display.newImage( "images/aim.png" )
-	aim1.alpha = 0 
-	view:insert(aim1)
-    
-    --------------------------------------
 	
 	--------------scoreText---------------
 	local textOptions = { text = "Score: " .. mydata.score, x = 110, y = 15, width = 200, align = "left", font = myFont, fontSize = 12 }
@@ -562,10 +557,6 @@ function scene:willEnterScene(e)
 				display.getCurrentStage():setFocus(self)
 				self.hasFocus = true
 				
-				aim1.alpha = 0
-				gameInfoText.alpha = 0
-				aim1.xScale=1
-				aim1.yScale=1
 				device.isFixedRotation = true
 				
 			elseif(self.hasFocus) then
@@ -602,8 +593,16 @@ function scene:willEnterScene(e)
 	if mydata.time ~= 0 then 
 		for i=1 ,numOfTarget do
 			target[i] = spawnTargets()
-			target[i].x = _W * 0.3 + (i * 100)
-			target[i].y = _H * 0.5
+			if i == 1 then
+				target[i].x = _W * 0.5 - 45
+				target[i].y = _H * 0.5 
+			elseif i == 2 then
+				target[i].x = _W * 0.5 
+				target[i].y = _H * 0.5 + 45  
+			elseif i == 3 then
+				target[i].x = _W * 0.5 + 100
+				target[i].y = _H * 0.5 + 140
+			end
 			target[i].type = "target" .. tostring(i)
 			view:insert(target[i])
 		end
@@ -613,8 +612,10 @@ function scene:willEnterScene(e)
 	---------------Create Gravity Targets----------------  
 	for i=1 ,numOfGravityTarget do
 		gravityTarget[i] = spawnGravityTargets()
-		gravityTarget[i].x = _W * i/5
-		gravityTarget[i].y = _H * 0.3
+		if i == 1 then
+			gravityTarget[i].x = _W * 0.35
+			gravityTarget[i].y = _H * 0.1
+		end
 		gravityTarget[i].type = "gravityTarget" .. tostring(i)
 		view:insert(gravityTarget[i])
 	end
@@ -623,8 +624,11 @@ function scene:willEnterScene(e)
 	-----------Create dynamicObjects-------------  
 	for i=1 ,numOfDynamicObject do
 		dynamicObject[i] = createDynamicObject()
-		dynamicObject[i].x = _W * 0.65
-		dynamicObject[i].y = _H * 0.1 + (i * 120)
+		if i == 1 then
+			dynamicObject[i].x = _W * 0.5 + 150
+			dynamicObject[i].y = _H * 0.5 - 50
+		end
+		
 		dynamicObject[i].type = "dynamicObject"
 		view:insert(dynamicObject[i])
 	end
@@ -633,21 +637,23 @@ function scene:willEnterScene(e)
 	------------Create movingObject--------------  
 	--print(mydata.reload)
 		for i=1 ,numOfMovingObject do
-			movingObject[i] = display.newImageRect("images/staticObject.png", 100, 15);
 			if i == 1 then
-				movingObject[i].x = _W * 0.4
-				movingObject[i].y = _H * 0.2
-				movingObject[i]:rotate(90)
+				movingObject[i] = display.newImageRect("images/staticObject.png", 100, 15);
+				movingObject[i].x = _W * 0.5 - 100
+				movingObject[i].y = _H * 0.5 - 50
+				movingObject[i]:rotate(-45)	
 			elseif i == 2 then	
-				movingObject[i].x = _W * 0.5
+				movingObject[i] = display.newImageRect("images/staticObject.png", 50, 15);
+				movingObject[i].x = _W * 0.35
 				movingObject[i].y = _H * 0.4
+				movingObject[i]:rotate(90)	
 			elseif i == 3 then	
-				movingObject[i].x = _W * 0.6
-				movingObject[i].y = _H * 0.2
+				movingObject[i].x = _W * 0.65
+				movingObject[i].y = _H * 0.3
 				movingObject[i]:rotate(90)	
 			end
 			movingObject[i].type = "movingObject"
-			physics.addBody(movingObject[i],"dynamic",{density = 10, friction = 0, bounce = 1})
+			physics.addBody(movingObject[i],"dynamic",{density = 25, friction = 0.6, bounce = 0.2})
 			view:insert(movingObject[i])
 		end
 	--------------------------------------------
@@ -713,8 +719,6 @@ function scene:willEnterScene(e)
 	lvlShotsTxt:toFront()
 	starGroup:toFront()
 	textGroup:toFront()
-	gameInfoText:toFront()
-	aim1:toFront()
 	--------------------------------------------
 
 	-------------Add Physic Bodies--------------
@@ -728,7 +732,7 @@ function scene:willEnterScene(e)
 	rightWall.isSensor = true
 	
 	for i=1 ,numOfStaticObject do
-		physics.addBody(staticObject[i],"static",{density = 10, friction = 0, bounce = 1})
+		physics.addBody(staticObject[i],"static",{density = 10, friction = 0.6, bounce = 0.2})
 	end
 
 	---------------------------------------------
@@ -747,32 +751,8 @@ function scene:enterScene(e)
 	time = 3000, 
 	alpha = 0,
 	onComplete = function()
-		
-		aim1.x = ball.x 
-		aim1.y = ball.y
-		
-		anim1 = transition.to( aim1, { 
-		alpha=0.4, 
-		xScale=0.25, 
-		yScale=0.25, 
-		time=200, 
-		onComplete = function()
-			transition.cancel(anim1)
-			anim1 = nil
-		end
-		})
-		
-		gameInfoText.x = ball.x + 100
-		gameInfoText.y = ball.y
-		
-		anim = transition.to(gameInfoText,{
-		time = 200,
-		alpha = 0.8,
-		onComplete = function()
 			transition.cancel(anim)
 			anim = nil
-		end
-		})
 	end
 	})
 	---------------------------------------------
@@ -802,7 +782,7 @@ function scene:enterScene(e)
 			lvlShotsTxt.alpha = 0.2
 			
 			collisionText.alpha = 0.2
-			
+			physics.setGravity(0,0)
 			ball.bodyType = "dynamic"
 			ball.isSensor = false
 			
@@ -837,18 +817,9 @@ function scene:enterScene(e)
 			if anim ~= nil then
 				transition.cancel(anim)
 				anim = nil
-				gameInfoText.alpha = 0
-				aim1.alpha = 0
-				aim1.xScale=1
-				aim1.yScale=1
 				textGroup.alpha = 0
-			else
-				gameInfoText.alpha = 0
-				aim1.alpha = 0
-				aim1.xScale=1
-				aim1.yScale=1
 			end
-		
+			
 			audio.play(soundEffects["aimSound"])
 
 			
@@ -904,7 +875,7 @@ function scene:enterScene(e)
 				
 				-- add physic body to the dynamic objects
 				for i=1 ,numOfDynamicObject do
-					physics.addBody(dynamicObject[i],"static",{density = 10, friction = 0.5, bounce = 1})
+					physics.addBody(dynamicObject[i],"static",{density = 10, friction = 0.6, bounce = 0.2})
 					-- Remove event listeners for the dynamic objects
 					dynamicObject[i]._tableListeners = nil
 				end
@@ -919,12 +890,12 @@ function scene:enterScene(e)
 					
 				ball:removeEventListener( "touch", shootBall )
 				
+				mydata.shot = mydata.shot + 1
+				lvlShotsTxt.text = "Shots: " .. mydata.shot
+				
 				audio.stop(2)
 				audio.seek(300, soundEffects["shotSound"])
 				audio.play(soundEffects["shotSound"], {channel = 3, duration= 400})
-				
-				mydata.shot = mydata.shot + 1
-				lvlShotsTxt.text = "Shots: " .. mydata.shot
 				--audio.dispose(aimSound)
 				--aimSound = nil
 			end
@@ -946,7 +917,7 @@ function scene:enterScene(e)
 			if e.target.type == "ball" and e.other.type == "ground" or e.other.type == "rightWall" or
 			e.other.type == "leftWall" or e.other.type == "ceiling" then
 				
-				timer.performWithDelay(10, reset)
+				timer.performWithDelay(20, reset)
 			
 			elseif e.target.type == "ball" and e.other.type == "staticObject" or e.other.type == "dynamicObject" 
 			or e.other.type == "movingObject" then
@@ -970,8 +941,8 @@ function scene:enterScene(e)
 					display.remove(gravityTarget[i])
 					gravityTarget[i] = nil
 					physics.setGravity(0,9.82)
-					mydata.score = mydata.score + 1
-					levelScore.text = "Score: " .. mydata.score
+					--mydata.score = mydata.score + 1
+					--levelScore.text = "Score: " .. mydata.score
 				end	
 			end
 		end
@@ -1182,16 +1153,9 @@ function scene:exitScene(e) --Stop listeners, timers, and animations (transition
 		transition.cancel(anim)
 		anim = nil
 		textGroup.alpha = 1
-		gameInfoText.alpha = 0
-		aim1.alpha = 0
-		aim1.xScale=1
-		aim1.yScale=1
+
 	else
 		textGroup.alpha = 1
-		gameInfoText.alpha = 0
-		aim1.alpha = 0
-		aim1.xScale=1
-		aim1.yScale=1
 	end
 	
 	if pJoints[1] ~= nil then
