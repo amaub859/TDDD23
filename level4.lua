@@ -10,24 +10,49 @@ physics.start();
 physics.setScale( 60 ) 
 physics.setGravity(0,0)
 
+------------------Sound effects------------------- 
+local soundEffects = {
+
+	 boingSound = audio.loadSound("sound/boing_wav.wav"),
+	 aimSound = audio.loadSound("sound/aim.mp3"),
+	 getTarget = audio.loadSound("sound/getTarget.mp3"),
+	 shotSound = audio.loadStream("sound/shot.mp3")
+}
+
+mydata.lvlMusic = audio.loadStream("sound/levelStart.mp3")
+--------------------------------------------------
+
 --Forward references so that we can access objects accross functions
 local device;
 local spinIt;
 
-local lvlText
+local textGroup
 local device = {}
 local ball = {}
 local pJoints = {}
 local dynamicObject = {}
 local staticObject = {}
+local movingObject = {}
 local target = {}
+local gravityTarget = {}
 local lvlComplete = nil
 local numOfTarget = 3
-local numOfDynamicObject = 1
-local numOfStaticObject = 1
+local numOfDynamicObject = 0
+local numOfStaticObject = 4
+local numOfMovingObject = 0
+local numOfGravityTarget = 1
+local anim
 
+local lvlShots = 1
+local lvlCollisions = 8
+local lvlMonsters = 3
 mydata.lvl = 4
+local lvlNext = 5
+local lvlStar1 = "star10"
+local lvlStar2 = "star11"
+local lvlStar3 = "star12"
 
+local myFont = (platform ~= "Android") and "Manteka" or system.nativeFont;
 
 ------------Functions------------ 
 
@@ -41,13 +66,25 @@ end
 
 local function onButtonHome(e)
 	if e.phase == "ended" then
+		audio.stop(1)
+		audio.dispose(mydata.startMusic)
+		mydata.startMusic = nil
+		
 		timer.performWithDelay(20, home)
 	end
 	return true
 end
 
 
-local function onButtonRestart(e)
+local function onReloadBtn(e)
+	if e.phase == "ended" then
+		timer.performWithDelay(20, reload)
+	end
+	return true
+end
+
+
+local function onRestartBtn(e)
 	if e.phase == "ended" then
 		timer.performWithDelay(20, restart)
 	end
@@ -55,15 +92,50 @@ local function onButtonRestart(e)
 end
 
 
+local function onInfoBtn(e)
+	if e.phase == "ended" then
+		levelInfo()
+	end
+	return true
+end
+
+
+local function onBtnShop(e)
+	if e.phase == "ended" then
+		timer.performWithDelay(20, goToShop)
+	end
+	return true
+end
+
+
+local function onBackgroundTouch(e)
+	if e.phase == "ended" then
+		frameGroup.alpha = 0
+	end
+	return true
+end
+
 local function spawnTargets()
 	local view = scene.view
 	
-	local trgt = display.newImageRect("images/bar.png",20,20)
+	local trgt = display.newImageRect("images/spaceMonster.png",25,25)
 	
 	physics.addBody(trgt,"static",{density = 10, friction = 0.5, bounce = 1})
 	trgt.isSensor = true
 	
-	view:insert(trgt)
+	return trgt
+
+end
+
+
+local function spawnGravityTargets()
+	local view = scene.view
+	
+	local trgt = display.newImageRect("images/gravityTarget.png",30,30)
+	
+	physics.addBody(trgt,"static",{density = 10, friction = 0.5, bounce = 1})
+	trgt.isSensor = true
+	
 	return trgt
 
 end
@@ -75,39 +147,57 @@ local function levelComplete()
 	local frameGroup = display.newGroup()
 	
 	local frame = display.newImageRect("images/background_sky.png",300,200)
-	local frameText = display.newText("Level Completed", 0, 0, native.systemFont, 24)
-	frameText:setTextColor(0,0,0)
+	local blackFrame = display.newRect(0, 0, _W, _H);
+	blackFrame:setFillColor(0,0,0);
+	local frameText = display.newText("Level Completed!", 0, 0, myFont, 24)
+	frameText:setTextColor(255,156,0)
 	
-	star1 = display.newImageRect("images/star.png",50,50)
-	local star1Unlocked = display.newImageRect("images/star2.png",50,50)
-	star2 = display.newImageRect("images/star.png",50,50)
-	local star2Unlocked = display.newImageRect("images/star2.png",50,50)
-	star3 = display.newImageRect("images/star.png",50,50)
-	local star3Unlocked = display.newImageRect("images/star2.png",50,50)
+	star1 = display.newImageRect("images/star2.png",50,50)
+	star2 = display.newImageRect("images/star2.png",50,50)
+	star3 = display.newImageRect("images/star2.png",50,50)
+	
+	local textOptions = { text = "All monsters", x = -80, y = 30, width = 64, align = "center", font = myFont, fontSize = 10 }
+    star1Txt = display.newText(textOptions)
+    star1Txt:setTextColor(244,204,34)
+	
+	local textOptions = { text = "", x = 0, y = 10, width = 36, align = "center", font = myFont, fontSize = 10 }
+    star2Txt = display.newText(textOptions)
+    star2Txt:setTextColor(244,204,34)
+    
+    local textOptions = { text = "", x = 80, y = 30, width = 64, align = "center", font = myFont, fontSize = 10 }
+    star3Txt = display.newText(textOptions)
+    star3Txt:setTextColor(244,204,34)
 
-	buttonNext = display.newImageRect("images/btn_arrow.png",40,40)
+	buttonNext = display.newImageRect("images/nextBtn.png",40,40)
 	buttonNext:addEventListener("touch",onButtonNext)
 	
-	buttonHome = display.newImageRect("images/btn_arrow.png",40,40)
+	buttonHome = display.newImageRect("images/homeBtn.png",40,40)
 	buttonHome:addEventListener("touch",onButtonHome)
 	
-	buttonRestart = display.newImageRect("images/btn_arrow.png",40,40)
-	buttonRestart:addEventListener("touch",onButtonRestart)
+	restartBtn = display.newImageRect("images/buttonRestart.png",40,40)
+	restartBtn:addEventListener("touch",onRestartBtn)
+	
+	btnShop = display.newImageRect("images/shopBtn.png",40,40)
+	btnShop:addEventListener("touch",onBtnShop)
 
 	frameText.x = 0
 	frameText.y = -80
 	
-	star3.x = 80
-	star3.y = 0
+	blackFrame.x = 0
+	blackFrame.y = 0	
+	blackFrame.alpha = 0.5
 	
-	star3Unlocked.x = 80
-	star3Unlocked.y = 0
+	star3.x = 80
+	star3.y = -10
+	star3.alpha = 0.2
 	
 	star1.x = -80
-	star1.y = 0
+	star1.y = -10
+	star1.alpha = 0.2
 	
-	star1Unlocked.x = -80
-	star1Unlocked.y = 0
+	star2.x = 0
+	star2.y = -30
+	star2.alpha = 0.2
 
 	buttonNext.x = 80
 	buttonNext.y = 80
@@ -115,23 +205,70 @@ local function levelComplete()
 	buttonHome.x = -80
 	buttonHome.y = 80
 	
-	buttonRestart.x = 0
-	buttonRestart.y = 80
+	restartBtn.x = 0
+	restartBtn.y = 80
+	
+	btnShop.x = -140
+	btnShop.y = -50
 	
 	frameGroup:insert(frame)
+	frameGroup:insert(blackFrame)
 	frameGroup:insert(frameText)
-	frameGroup:insert(star1Unlocked)
-	frameGroup:insert(star2Unlocked)
-	frameGroup:insert(star3Unlocked)
 	frameGroup:insert(star1)
 	frameGroup:insert(star2)
 	frameGroup:insert(star3)
+	frameGroup:insert(star1Txt)
+	frameGroup:insert(star2Txt)
+	frameGroup:insert(star3Txt)
 
 	frameGroup:insert(buttonNext)
 	frameGroup:insert(buttonHome)
-	frameGroup:insert(buttonRestart)
+	frameGroup:insert(restartBtn)
+	frameGroup:insert(btnShop)
 	
 	view:insert(frameGroup)
+	
+	return frameGroup
+	
+end
+
+
+function levelInfo()
+	local view = scene.view
+	
+	frameGroup = display.newGroup()
+	
+	local background = display.newRect(0, 0, _W, _H)
+	local frame = display.newImageRect("images/background_sky.png",300,200)
+	local frameText = display.newText("Level Mission:", 0, 0, native.systemFont, 24)
+	local frameText2 = display.newText("* All monster in 1 shot", 0, 0, native.systemFont, 24)
+	
+	background:setFillColor(0,0,0)
+	background.alpha = 0.2
+	background.x = 0	
+	background.y = 0
+	background:addEventListener("touch",onBackgroundTouch)
+	
+	frame.x = 0
+	frame.y = 0
+	
+	frameText:setTextColor(255,156,0)
+	frameText.x = 0
+	frameText.y = -80
+	
+	frameText2:setTextColor(255,156,0)
+	frameText2.x = 0
+	frameText2.y = 0
+	
+	frameGroup:insert(background)
+	frameGroup:insert(frame)
+	frameGroup:insert(frameText)
+	frameGroup:insert(frameText2)
+	
+	view:insert(frameGroup)
+	
+	frameGroup.x = _W * 0.5;
+	frameGroup.y = _H * 0.5;
 	
 	return frameGroup
 	
@@ -140,7 +277,7 @@ end
 	
 local function createDynamicObject()
 	local view = scene.view
-	local dynamicObject = display.newImageRect("images/platform.png", 100, 25);
+	local dynamicObject = display.newImageRect("images/astroids.png", 100, 25);
 	
 	function dynamicObject:touch(e)
 			local t = e.target
@@ -192,7 +329,6 @@ local function createDynamicObject()
 		end
 
 	dynamicObject:addEventListener("touch",dynamicObject)
-	view:insert(dynamicObject)	
 	
 	return dynamicObject	
 end
@@ -202,9 +338,17 @@ end
 function scene:createScene(e)
 	local view = self.view	
 	
+	audio.fade( { channel=1, time=2000, volume=0 } )
+	--audio.stopWithDelay(2000,{channel= 1})
+	
+	--audio.seek(280000, mydata.lvlMusic)
+	--audio.play(mydata.lvlMusic, {channel=7, loops=0,fadein=14000})
+	--audio.setVolume(0.2, {channel = 1})
+	
 	--------------Background--------------
-	local background = display.newRect(0, 0, _W, _H);
-	background:setFillColor(255,255,255);
+	local background = display.newImageRect("images/background.png",_W,_H)
+	background.x = _W * 0.5;
+	background.y = _H * 0.5;
 	view:insert(background);
 	--------------------------------------
 	
@@ -243,56 +387,116 @@ function scene:createScene(e)
     view:insert(rightWall);
 	--------------------------------------
 	
-	---------------lvlText----------------
-    lvlText = display.newText(string.format("Level: %1d", mydata.lvl),0,0,font,24)
-    lvlText:setTextColor(0,0,0)
-    lvlText.x = 50
-    lvlText.y = 20
-    view:insert(lvlText)
+	---------------textGroup----------------
+	textGroup = display.newGroup()
+	
+    lvlText = display.newText(string.format("Level %1d", mydata.lvl),0,0,myFont,24)
+    lvlText:setTextColor(255,156,0)
+    lvlText.x = 0
+    lvlText.y = 0
+    
+    missionText = display.newText(string.format("All monsters in 1 shot", mydata.lvl),0,0,myFont,24)
+    missionText:setTextColor(255,156,0)
+    missionText.x = 0
+    missionText.y = 30
+    
+    textGroup:insert(lvlText)
+    textGroup:insert(missionText)
+    
+    textGroup.x = _W * 0.5
+    textGroup.y = _H * 0.3
+   
+    view:insert(textGroup)
     --------------------------------------
+    
+	
+	-----------staticObjects--------------  
+	for i=1 ,numOfStaticObject do
+		if i == 1 then
+			staticObject[i] = display.newImageRect("images/staticObject.png", 400, 25)
+			staticObject[i].x = _W * 0.63
+			staticObject[i].y = _H 
+		elseif i == 2 then	
+			staticObject[i] = display.newImageRect("images/staticObject.png", 160, 25)
+			staticObject[i].x = _W * 0.3
+			staticObject[i].y = _H * 0.71
+			staticObject[i]:rotate(90)
+		elseif i == 3 then	
+			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)	
+			staticObject[i].x = _W
+			staticObject[i].y = _H * 0.65
+			staticObject[i]:rotate(90)
+		elseif i == 4 then		
+			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)
+			staticObject[i].x = _W * 0.5
+			staticObject[i].y = _H * 0.5
+		end
+		staticObject[i].type = "staticObject"
+		view:insert(staticObject[i]);
+	end
+	---------------------------------------
 	
 	--------------scoreText---------------
-	local font = "HelveticaNeue" or native.systemFont;
-	levelScore = display.newText(string.format("Score: %1d", mydata.score),0,0,font,24);
-    levelScore:setTextColor(0,0,0);
-    levelScore.x = 50;
-    levelScore.y = 40;
+	local textOptions = { text = "Score: " .. mydata.score, x = 110, y = 15, width = 200, align = "left", font = myFont, fontSize = 12 }
+	levelScore = display.newText(textOptions);
+    levelScore:setTextColor(244,204,34);
+    levelScore.alpha = 0.8
     view:insert(levelScore);
     --------------------------------------
     
-    -----------totalCollisions------------
-    collisionText = display.newText(string.format("Collisions: %1d", mydata.collision),0,0,font,24)
-    collisionText:setTextColor(0,0,0)
-    collisionText.x = 70
-    collisionText.y = 60
-    view:insert(collisionText)
+    -----------totalShots------------
+    local textOptions = { text = "Shots: " .. mydata.collision, x = 110, y = 30, width = 200, align = "left", font = myFont, fontSize = 12 }
+    lvlShotsTxt = display.newText(textOptions)
+    lvlShotsTxt:setTextColor(244,204,34)
+    lvlShotsTxt.alpha = 0.8
+    view:insert(lvlShotsTxt)
     --------------------------------------
     
-    --------------device------------------   
-    device = display.newImageRect("images/foo.png",50,50);
-	device.x = 20;
-	device.y = _H *0.5;
-	view:insert(device)
-	--------------------------------------
+    -----------totalCollisions------------
+    local textOptions = { text = "Collisions: " .. mydata.collision, x = 110, y = 45, width = 200, align = "left", font = myFont, fontSize = 12 }
+    collisionText = display.newText(textOptions)
+    collisionText:setTextColor(244,204,34)
+    collisionText.alpha = 0.8
+    view:insert(collisionText)
+    --------------------------------------
 	
-	----------------Ball------------------  
-	ball = display.newImageRect("images/foo.png",25,25)
-	ball.type = "ball"
-	view:insert(ball)
-	--------------------------------------
+	--------------Game Buttons-------------
+	infoBtn = display.newImageRect("images/infoBtn.png",40,40)
+	infoBtn.x = 25
+	infoBtn.y = _H - 25 
+	infoBtn.alpha = 0.8
+	infoBtn:addEventListener("touch",onInfoBtn)
+	view:insert(infoBtn)
 	
-	-----------staticObjects-------------  
-	for i=1 ,numOfStaticObject do
-		staticObject[i] = display.newImageRect("images/platform.png", 200, 25);
-		if i == 1 then
-			staticObject[i].x = _W * 0.5
-			staticObject[i].y = _H 
-		elseif i == 2 then	
-			staticObject[i].x = _W * 0.5
-			staticObject[i].y = 0
-		end
-		view:insert(staticObject[i]);
-	end
+	reloadBtn = display.newImageRect("images/buttonRestart.png",40,40)
+	reloadBtn.x = 75
+	reloadBtn.y = _H - 25 
+	reloadBtn.alpha = 0.8
+	reloadBtn:addEventListener("touch",onReloadBtn)
+	view:insert(reloadBtn)
+	
+	homeBtn = display.newImageRect("images/homeBtn.png",40,40)
+	homeBtn.x = _W - 25
+	homeBtn.y = 25
+	homeBtn.alpha = 0.8
+	homeBtn:addEventListener("touch",onButtonHome)
+	view:insert(homeBtn)
+	
+	starGroup = display.newGroup()
+	local font = "HelveticaNeue" or native.systemFont;
+	starTxt = display.newText(string.format("%1dx", #mydata.star),0,0,font,15);
+	starTxt:setTextColor(244,204,34)
+	starTxt.x = _W - 10
+	starTxt.y = _H - 10
+	
+	starsPic = display.newImageRect("images/star2.png",20,20)
+	starsPic.x = _W - 30
+	starsPic.y = _H - 15
+	
+	starGroup:insert(starsPic)
+	starGroup:insert(starTxt)
+	starGroup.alpha = 0.8
+	view:insert(starGroup)
 	---------------------------------------
 	
 end -------------------------------------------- end of createScene
@@ -304,108 +508,261 @@ function scene:willEnterScene(e)
 	physics.start()
 	physics.setGravity(0,0)
 	
-	------------Reloading positions-------------
-	device.isVisible = true
-	device.x = 20
-	device.y = _H *0.5
+	infoBtn.alpha = 0.8
+	reloadBtn.alpha = 0.8
+	homeBtn.alpha = 0.8
 	
-	ball.x = _W * 0.5 - 190
-	ball.y = _H * 0.5
+	----------------Create Ball-----------------
+	function resetBall()
+		ball = display.newImageRect("images/astroid.png",25,25)
+		ball.type = "ball"
+		ball.x = 75
+		ball.y = _H * 0.5
+		
+		physics.addBody(ball,"kinematic",{
+			density = 10, friction = 0.5, bounce = 1, radius = 12.5,
+			filter = {
+				categoryBits = 2, --So that the device and ball don't collide with each other
+				maskBits = 1 --So that the ball collides with the ground (which is 1 by default)
+			}
+		})
+		ball.isSensor = true
+		
+		view:insert(ball)
+	end
+	resetBall()
 	--------------------------------------------
-
-	-------------Add Physic Bodies--------------
-	physics.addBody(ground,"static",{friction = 0.5, bounce = 1});
-	physics.addBody(ceiling,"static",{friction = 0.5, bounce = 1});
-	physics.addBody(leftWall,"static",{friction = 0.5, bounce = 1});
-	physics.addBody(rightWall,"static",{friction = 0.5, bounce = 1});
 	
-	physics.addBody(device,{
+	---------------Create Device----------------
+	function resetDevice()
+		device = display.newImageRect("images/device.png",65,40);
+		device.x = 35;
+		device.y = _H *0.5;
+		
+		physics.addBody(device,"kinematic",{
 		density = 10, friction = 0.5, bounce = 0.2, radius = 12.5,
-		filter = 
-		{
-			categoryBits = 2, --So that the device and ball don't collide with each other
-			maskBits = 1 --So that the ball collides with the ground (which is 1 by default)
-		}
-	})
+			filter = 
+			{
+				categoryBits = 2, --So that the device and ball don't collide with each other
+				maskBits = 1 --So that the ball collides with the ground (which is 1 by default)
+			}
+		})
+		device.isSensor = true
+		
+		function device:touch(e)
+			if(e.phase == "began") then
+				
+				self.oldY = self.y
+				display.getCurrentStage():setFocus(self)
+				self.hasFocus = true
+				
+				device.isFixedRotation = true
+				
+			elseif(self.hasFocus) then
+				if(e.phase == "moved") then
+					--move the device in y-axis
+					self.y = (e.y - e.yStart) + self.oldY;
+					
+					if self.y < 0 then
+						self.y = 0
+					elseif self.y > _H then
+						self.y = _H
+					end
+					
+					ball.y = self.y
+					--print("moved")
+							
+				elseif(e.phase == "ended" or e.phase == "cancelled") then
+					display.getCurrentStage():setFocus(nil)
+					self.hasFocus = false;
+					
+					--print("ended")	
+				end
+			end
+			return true
+		end
+		device:addEventListener("touch",device)
+		
+		view:insert(device)
+	end	
+	resetDevice()
+	--------------------------------------------
 	
-	physics.addBody(ball,{
-		density = 10, friction = 0.5, bounce = 1, radius = 12.5,
-		filter = {
-			categoryBits = 2, --So that the device and ball don't collide with each other
-			maskBits = 1 --So that the ball collides with the ground (which is 1 by default)
-		}
-	})
-	
-	for i=1 ,numOfStaticObject do
-		physics.addBody(staticObject[i],"static",{density = 10, friction = 0, bounce = 1})
+	---------------Create Targets---------------- 
+	if mydata.time ~= 0 then 
+		for i=1 ,numOfTarget do
+			target[i] = spawnTargets()
+			if i == 1 then
+				target[i].x = _W * 0.5 
+				target[i].y = _H * 0.65 
+			elseif i == 2 then
+				target[i].x = _W * 0.5 
+				target[i].y = _H * 0.85  
+			elseif i == 3 then
+				target[i].x = _W * 0.35 
+				target[i].y = _H * 0.75 
+			end
+			target[i].type = "target" .. tostring(i)
+			view:insert(target[i])
+		end
 	end
 	---------------------------------------------
 	
-	pJoints[1] = physics.newJoint("weld", device, ball, device.x, device.y)
-	device.isFixedRotation = true
-end -------------------------------------------- end of willEnterScene
-
-
-function scene:enterScene(e)
-	local view = self.view
-	
-	storyboard.purgeScene("mainMeny")
-	storyboard.purgeScene("reloading")
-	
-	---------------Create Targets----------------  
-	for i=1 ,numOfTarget do
-		target[i] = spawnTargets()
-		target[i].x = _W * i/5
-		target[i].y = _H * 0.5
-		target[i].type = "target" .. tostring(i)
+	---------------Create Gravity Targets----------------  
+	for i=1 ,numOfGravityTarget do
+		gravityTarget[i] = spawnGravityTargets()
+		if i == 1 then
+			gravityTarget[i].x = _W * 0.35
+			gravityTarget[i].y = _H * 0.2
+		end
+		gravityTarget[i].type = "gravityTarget" .. tostring(i)
+		view:insert(gravityTarget[i])
 	end
 	---------------------------------------------
 	
 	-----------Create dynamicObjects-------------  
 	for i=1 ,numOfDynamicObject do
 		dynamicObject[i] = createDynamicObject()
-		dynamicObject[i].x = _W * i/3
-		dynamicObject[i].y = _H * 0.5
+		if i == 1 then
+			dynamicObject[i].x = _W * 0.5
+			dynamicObject[i].y = _H * 0.75
+		end
+		
+		dynamicObject[i].type = "dynamicObject"
+		view:insert(dynamicObject[i])
 	end
 	---------------------------------------------
 	
+	------------Create movingObject--------------  
+	--print(mydata.reload)
+		for i=1 ,numOfMovingObject do
+			if i == 1 then
+				movingObject[i] = display.newImageRect("images/staticObject.png", 100, 15);
+				movingObject[i].x = _W * 0.65
+				movingObject[i].y = _H * 0.3
+				movingObject[i]:rotate(90)	
+			elseif i == 2 then	
+				movingObject[i] = display.newImageRect("images/staticObject.png", 50, 15);
+				movingObject[i].x = _W * 0.35
+				movingObject[i].y = _H * 0.4
+				movingObject[i]:rotate(90)	
+			elseif i == 3 then	
+				movingObject[i].x = _W * 0.65
+				movingObject[i].y = _H * 0.3
+				movingObject[i]:rotate(90)	
+			end
+			movingObject[i].type = "movingObject"
+			physics.addBody(movingObject[i],"dynamic",{density = 25, friction = 0.6, bounce = 0.2})
+			view:insert(movingObject[i])
+		end
+	--------------------------------------------
+	
+	-------------- Create Level Timer--------------
+	if mydata.time ~= 0 then
+		output = display.newText("" .. mydata.time, 0, 0, native.systemFont, 20);
+		output:setTextColor(244,204,34);
+		output:setReferencePoint(display.CenterReferencePoint)
+		output.x = _W * 0.97;
+		output.y = _H * 0.9;
+		
+			-- Create a method to add the setText method to text objects
+		local function addSetText(obj)
+			-- Create a custom method for setting text
+			function obj:setText(txt,align)
+				local a = align or display.CenterReferencePoint;
+				local oldX = self.x;
+				local oldY = self.y;
+				self.text = txt;
+				self:setReferencePoint(a);
+				self.x = oldX;
+				self.y = oldY;
+			end
+		end
+		
+		-- Add the setText method to the two text objects
+		addSetText(output);
+			
+			--Assign a timer to the variable
+		tmr = timer.performWithDelay(1000, function(e)
+			mydata.time = mydata.time - 1
+			--print(mydata.time)
+			output:setText(mydata.time, display.CenterReferencePoint);
+			if output.alpha > 0 then
+				output.alpha = math.round((output.alpha - 0.25) * 10)*0.1
+			end
+			--print(mydata.time - e.count)
+		
+			if(mydata.time == 5) then
+				output.alpha = 1
+			elseif(mydata.time == 0) then
+			
+				timer.cancel(tmr);
+				tmr = nil;
+				for i=1 ,numOfTarget do
+					if target[i] ~= nil then
+						display.remove(target[i])
+						target[i] = nil
+					end
+				end
+			end
+		end,60);--rate of timer, callback function, # of iterations
+	end
+	------------------------------------------
+	
+	-------Bring play bottoms toFront----------
+	infoBtn:toFront()
+	reloadBtn:toFront()
+	homeBtn:toFront()
+	collisionText:toFront()
+	levelScore:toFront()
+	lvlShotsTxt:toFront()
+	starGroup:toFront()
+	textGroup:toFront()
+	--------------------------------------------
+
+	-------------Add Physic Bodies--------------
+	physics.addBody(ground,"kinematic",{friction = 0.5, bounce = 1});
+	physics.addBody(ceiling,"kinematic",{friction = 0.5, bounce = 1});
+	physics.addBody(leftWall,"kinematic",{friction = 0.5, bounce = 1});
+	physics.addBody(rightWall,"kinematic",{friction = 0.5, bounce = 1});
+	ground.isSensor = true
+	ceiling.isSensor = true
+	leftWall.isSensor = true
+	rightWall.isSensor = true
+	
+	for i=1 ,numOfStaticObject do
+		physics.addBody(staticObject[i],"static",{density = 10, friction = 0.6, bounce = 0.2})
+	end
+
+	---------------------------------------------
+	
+end -------------------------------------------- end of willEnterScene
+
+
+function scene:enterScene(e)
+	local view = self.view
+	
+	--storyboard.purgeScene("mainMeny")
+	--storyboard.purgeScene("restart")
+	
+	-------------Fade out start text-------------  
+	anim = transition.to(textGroup, {
+	time = 3000, 
+	alpha = 0,
+	onComplete = function()
+			transition.cancel(anim)
+			anim = nil
+	end
+	})
+	---------------------------------------------
+	
+		
 	---------Create levelComplete frame---------- 
 	lvlComplete = levelComplete()
 	lvlComplete.x = _W *0.5
 	lvlComplete.y = _H *0.5
 	lvlComplete.alpha = 0
 	---------------------------------------------
-	
-	function device:touch(e)
-		if(e.phase == "began") then
-			
-			self.oldY = self.y
-			display.getCurrentStage():setFocus(self)
-			self.hasFocus = true
-			
-		elseif(self.hasFocus) then
-			if(e.phase == "moved") then
-				--move the device in y-axis
-				self.y = (e.y - e.yStart) + self.oldY;
-				
-				if self.y < 0 then
-					self.y = 0
-				elseif self.y > _H then
-					self.y = _H
-				end
-				--print("moved")
-						
-			elseif(e.phase == "ended" or e.phase == "cancelled") then
-				display.getCurrentStage():setFocus(nil)
-				self.hasFocus = false;
-				
-				--print("ended")	
-			end
-		end
-		return true
-	end
-	device:addEventListener("touch",device)
-	
 	
 	function shootBall(e)
 		local view = scene.view
@@ -416,7 +773,20 @@ function scene:enterScene(e)
 			display.getCurrentStage():setFocus(t)
 			t.isFocus = true
 			
+			infoBtn.alpha = 0.2
+			reloadBtn.alpha = 0.2
+			homeBtn.alpha = 0.2
+			starGroup.alpha = 0.2
+			levelScore.alpha = 0.2
+			lvlShotsTxt.alpha = 0.2
+			
+			collisionText.alpha = 0.2
+			physics.setGravity(0,0)
+			ball.bodyType = "dynamic"
+			ball.isSensor = false
+			
 			----------Create Rotating aim------------
+			print("create aim")
 			aim = display.newImage( "images/aim.png" )
 			aim.x = ball.x; aim.y = ball.y; aim.alpha = 0;
 			
@@ -435,10 +805,21 @@ function scene:enterScene(e)
 			---------------------------------------------
 			
 			--To remove a joint, call its removeSelf method
-			pJoints[1]:removeSelf()
+			if pJoints[1] ~= nil then
+				pJoints[1]:removeSelf()
+				pJoints[1] = nil
+			end
 			
 			myLine = nil
 			ball.isFixedRotation = true
+			
+			if anim ~= nil then
+				transition.cancel(anim)
+				anim = nil
+				textGroup.alpha = 0
+			end
+			
+			audio.play(soundEffects["aimSound"])
 
 			
 		elseif t.isFocus then
@@ -454,15 +835,26 @@ function scene:enterScene(e)
 					myLine = display.newLine( t.x,0, e.x,0 )
 					myLine.y = t.y
 				end
-				myLine:setColor( 255, 0, 0, 50 )
+				myLine:setColor(244,204,34,50)
 				myLine.width = 10
 				view:insert(myLine)
 				---------------------------------------------
+				
 				
 			elseif "ended" == phase or "cancelled" == phase then
 			
 				display.getCurrentStage():setFocus(nil)
 				t.isFocus = false
+				
+				infoBtn.alpha = 0.8
+				reloadBtn.alpha = 0.8
+				homeBtn.alpha = 0.8
+				starGroup.alpha = 0.8
+				levelScore.alpha = 0.8
+				lvlShotsTxt.alpha = 0.8
+				collisionText.alpha = 0.8
+				
+				device:removeEventListener("touch",device)
 				
 				--Remove aim and Line
 				local stopRotation = function()
@@ -475,13 +867,14 @@ function scene:enterScene(e)
 				
 				if (myLine) then
 					myLine.parent:remove( myLine )
+					myLine = nil
 				end
 				
 				device:setLinearVelocity(-20,0)
 				
 				-- add physic body to the dynamic objects
 				for i=1 ,numOfDynamicObject do
-					physics.addBody(dynamicObject[i],"static",{density = 10, friction = 0.5, bounce = 1})
+					physics.addBody(dynamicObject[i],"static",{density = 10, friction = 0.6, bounce = 0.2})
 					-- Remove event listeners for the dynamic objects
 					dynamicObject[i]._tableListeners = nil
 				end
@@ -495,6 +888,15 @@ function scene:enterScene(e)
 				end	
 					
 				ball:removeEventListener( "touch", shootBall )
+				
+				mydata.shot = mydata.shot + 1
+				lvlShotsTxt.text = "Shots: " .. mydata.shot
+				
+				audio.stop(2)
+				audio.seek(300, soundEffects["shotSound"])
+				audio.play(soundEffects["shotSound"], {channel = 3, duration= 400})
+				--audio.dispose(aimSound)
+				--aimSound = nil
 			end
 		end
 		return true	-- Stop further propagation of touch event
@@ -502,81 +904,119 @@ function scene:enterScene(e)
 	ball:addEventListener( "touch", shootBall ) -- Sets event listener to ball
 	
 	
-	
 	function onCollision(self, e)
-	 	if ( e.phase == "began" ) then
-			mydata.collision  = mydata.collision  + 1
-			collisionText.text = "Collisions: " .. mydata.collision 
-			ball.isFixedRotation = false
-		end
-	 	
-	 	for i = numOfTarget, 1, -1 do
-			
+		if mydata.score < 3 then
+	 		if ( e.phase == "began" ) then
+				mydata.collision  = mydata.collision  + 1
+				collisionText.text = "Collisions: " .. mydata.collision
+				star3Txt.text = "Collisions " .. mydata.collision .. "/" .. lvlCollisions
+				ball.isFixedRotation = false
+			end
+
 			if e.target.type == "ball" and e.other.type == "ground" or e.other.type == "rightWall" or
 			e.other.type == "leftWall" or e.other.type == "ceiling" then
-
-				timer.performWithDelay(20, reload)
 				
-			elseif e.target.type == "ball" and e.other.type == "target" .. tostring(i)  then
-				display.remove(target[i])
-				target[i] = nil
-				mydata.score = mydata.score + 1
-				levelScore.text = "Score: " .. mydata.score
+				timer.performWithDelay(20, reset)
+			
+			elseif e.target.type == "ball" and e.other.type == "staticObject" or e.other.type == "dynamicObject" 
+			or e.other.type == "movingObject" then
+
+				audio.play(soundEffects["boingSound"], {duration = 400, fadein = 400})
+			end
+			
+			for i = numOfTarget, 1, -1 do	
+				if e.target.type == "ball" and e.other.type == "target" .. tostring(i)  then
+					display.remove(target[i])
+					target[i] = nil
+					mydata.score = mydata.score + 1
+					levelScore.text = "Score: " .. mydata.score
+				
+					audio.play(soundEffects["getTarget"], {duration = 400})
+				end	
+			end
+			
+			for i = numOfGravityTarget, 1, -1 do	
+				if e.target.type == "ball" and e.other.type == "gravityTarget" .. tostring(i)  then
+					display.remove(gravityTarget[i])
+					gravityTarget[i] = nil
+					physics.setGravity(0,9.82)
+					--mydata.score = mydata.score + 1
+					--levelScore.text = "Score: " .. mydata.score
+				end	
 			end
 		end
 	   
-		if mydata.score >= 3 then
+		if mydata.score >= lvlMonsters then
 			
 			lvlComplete.alpha = 1
-			star1.alpha = 0
+			
+			infoBtn.alpha = 0
+			reloadBtn.alpha = 0
+			homeBtn.alpha = 0
+			
+			star1.alpha = 1
+			physics.setGravity(0,0)
 			ball.linearDamping = 5
 			
 			------------Possible Stars--------------
 			local bool = false
 			for i=1,#mydata.star do
-				if mydata.star[i] == "star10" then
+				if mydata.star[i] == lvlStar1 then
 					bool = true
 				end
 			end
 			if bool == false then
-				table.insert(mydata.star, "star10")
+				table.insert(mydata.star, lvlStar1)
 			end
 			
-			if mydata.reload < 2 then
+			star2Txt.text = "Shots " .. mydata.shot .. "/" .. lvlShots
+			if mydata.shot <= lvlShots then
 				local bool = false
-				star2.alpha = 0
+				star2.alpha = 1
 				for i=1,#mydata.star do
-					if mydata.star[i] == "star11" then
+					if mydata.star[i] == lvlStar2 then
 						bool = true
 					end
 				end
 				if bool == false then
-					table.insert(mydata.star, "star11")
+					table.insert(mydata.star, lvlStar2)
 				end
 			end
 			
-			if mydata.collision < 10 then
+			if mydata.collision <= lvlCollisions then
 				local bool = false
-				star3.alpha = 0
+				star3.alpha = 1
 				for i=1,#mydata.star do
-					if mydata.star[i] == "star12" then
+					if mydata.star[i] == lvlStar3 then
 						bool = true
 					end
 				end
 				if bool == false then
-					table.insert(mydata.star, "star12")
+					table.insert(mydata.star, lvlStar3)
 				end
 			end
-			print(#mydata.star)
 			---------------------------------------
 			
 			if mydata.lvlUnlocked <= mydata.lvl then
-				mydata.lvlUnlocked = 5
+				mydata.lvlUnlocked = lvlNext
 			end	
+			starTxt.text = #mydata.star .. "x"
 		end
 	end
 	ball.collision = onCollision
 	ball:addEventListener("collision", ball)
+	
+	
+	--[[function onHit(self, e)
+
+		for i = numOfMovingObject, 1, -1 do	
+			if e.target.type == "ground" and e.other.type == "movingObject" .. tostring(i) then
+				print("tjalala")
+			end	
+		end
+	end	
+	ground.collision = onHit
+	ground:addEventListener("collision", ground)]]
 	
 	
 	function removeTarget(target)
@@ -590,16 +1030,43 @@ function scene:enterScene(e)
 	end
 	
 	
+	function restart()
+		storyboard.gotoScene("restart", {time =250, effect="crossFade"})
+	end
+	
 	function reload()
-		storyboard.gotoScene("reloading", {time =250, effect="crossFade"})
+		storyboard.reloadScene()
 	end
 	
 	
-	function restart()
-		mydata.score = 0
-		mydata.reload = 0
-		mydata.collision = 0
-		storyboard.reloadScene() 
+	function reset()
+		--storyboard.reloadScene() 
+		ball:removeEventListener("collision", ball)
+		display.remove(ball)
+		ball = nil
+		display.remove(device)
+		device = nil
+		
+		resetBall()
+		resetDevice()
+		
+		ball:addEventListener( "touch", shootBall )	
+		ball.collision = onCollision
+		ball:addEventListener("collision", ball)
+		
+		infoBtn:toFront()
+		reloadBtn:toFront()
+		homeBtn:toFront()
+		collisionText:toFront()
+		levelScore:toFront()
+		lvlShotsTxt:toFront()
+		starGroup:toFront()
+	end
+	
+	
+	function goToShop()
+		storyboard.removeScene("shop")
+		storyboard.gotoScene("shop", {time =250, effect="crossFade"})
 	end
 	
 	
@@ -622,23 +1089,91 @@ function scene:exitScene(e) --Stop listeners, timers, and animations (transition
 	local view = self.view
 	
 	for i = numOfDynamicObject, 1, -1 do
-		physics.removeBody(dynamicObject[i])
-		display.remove(dynamicObject[i])
-		dynamicObject[i] = nil
+		if dynamicObject[i] ~= nil then
+		--if dynamicObject[i]._tableListeners == nil then
+			--physics.removeBody(dynamicObject[i])
+		--end
+			display.remove(dynamicObject[i])
+			dynamicObject[i] = nil
+		end
 	end
 	
 	for i = numOfStaticObject, 1, -1 do
 		physics.removeBody(staticObject[i])
 	end
 	
+	--if mydata.reload < 1 then
+		--print("tjenamosh")
+		for i = numOfMovingObject, 1, -1 do
+			if movingObject[i] ~= nil then
+				physics.removeBody(movingObject[i])
+				display.remove(movingObject[i])
+				movingObject[i] = nil
+			end
+		end
+	--end	
+	
+	if aim ~= nil then
+		aim.parent:remove(aim)
+		aim = nil
+	end
+	
+	for i = numOfTarget, 1, -1 do
+		if target[i] ~= nil then
+			display.remove(target[i])
+			target[i] = nil
+		end
+	end
+	
+	for i = numOfGravityTarget, 1, -1 do
+		if gravityTarget[i] ~= nil then
+			display.remove(gravityTarget[i])
+			gravityTarget[i] = nil
+		end
+	end
+	
 	levelScore.text = string.format("Score: %1d", 0)
 	collisionText.text = string.format("Collisions: %1d", 0)
+	lvlShotsTxt.text = string.format("Shots: %1d", 0)
 	
+	-- ball gets nil if reloadbutton is pressed just before the balls leave the scene
 	ball:removeEventListener("collision", ball)
+	display.remove(ball)
+	ball = nil
+	
+	display.remove(device)
+	device = nil
+	
+	--transition.cancel(anim)
+	--anim = nil
+	
+	if anim ~= nil then
+		transition.cancel(anim)
+		anim = nil
+		textGroup.alpha = 1
+
+	else
+		textGroup.alpha = 1
+	end
+	
+	if pJoints[1] ~= nil then
+		pJoints[1]:removeSelf()
+		pJoints[1] = nil
+	end
+	
+	if tmr ~= nil then
+		timer.cancel(tmr);
+		tmr = nil;
+	end
+	display.remove(output)
+	output = nil
 	
 	lvlComplete.alpha = 0
-	--ball:removeEventListener("collision", ball)
-	--device:removeEventListener("touch",device)
+	mydata.shot = 0
+	mydata.collision = 0
+	mydata.score = 0
+	mydata.time = 60
+
 	physics.stop()
 end ---------------------------------------------- end of exitScene
 

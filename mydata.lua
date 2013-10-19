@@ -20,3 +20,5 @@ for i=1 ,numOfDynamicObject do
 	-- Remove event listeners for the dynamic objects
 	dynamicObject[i]._tableListeners = nil
 end]]
+
+	

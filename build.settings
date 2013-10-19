@@ -16,7 +16,7 @@ settings = {
 		plist = {
 			UIAppFonts =
 			{
-				"infinity.ttf"
+				"font/manteka.ttf"
 			},
 			UIStatusBarHidden = false,
 			UIPrerenderedIcon = true, -- set to false for "shine" overlay

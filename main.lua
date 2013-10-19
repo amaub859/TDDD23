@@ -12,12 +12,16 @@ local storyboard = require("storyboard");--Include the storyboard library
 local mydata = require("mydata")
 
 mydata.lvl = 1
-mydata.lvlUnlocked = 1
-mydata.reload = 0
+mydata.lvlUnlocked = 5
+mydata.shot = 0
+mydata.restart = 0
 mydata.score = 0
 mydata.collision = 0
 mydata.star = {}
 mydata.deviceUnlocked = 1
+mydata.startMusic = nil
+mydata.lvlMusic = nil
+mydata.time = 60
 
 display.setStatusBar(display.HiddenStatusBar);
 

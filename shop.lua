@@ -57,8 +57,18 @@ local function onButtonBuy(e)
 			if #mydata.star >= 3 then
 				mydata.deviceUnlocked = 2
 			end
+			
+			locked = true
+			storyboard.removeScene("nextLevel")
+			storyboard.gotoScene("nextLevel", {time =250, effect="crossFade"})
 		end	
-		locked = true
+	end
+	return true
+end
+
+local function onButtonHome(e)
+	if e.phase == "ended" then
+		timer.performWithDelay(20, home)
 	end
 	return true
 end
@@ -121,24 +131,31 @@ function scene:createScene(e)
 	
 	background = display.newRect(0, 0, _W, _H);
 	background:setFillColor(255,255,255);
+	view:insert(background)
 	
+	homeBtn = display.newImageRect("images/foo.png",40,40)
+	homeBtn.x = _W - 25
+	homeBtn.y = 25 
+	homeBtn.alpha = 0.8
+	homeBtn:addEventListener("touch",onButtonHome)
+	view:insert(homeBtn)
+	
+	starGroup = display.newGroup()
 	local font = "HelveticaNeue" or native.systemFont;
-	local txt = display.newText("Scene 4",0,0,font,24);
-    txt:setTextColor(0,0,0);
-    txt.x = _W * 0.5;
-    txt.y = _H * 0.5 - 80;
-    
-    --Remember: this is local to the entire scene (line 6)
-
+	starTxt = display.newText(string.format("%1dx", #mydata.star),0,0,font,15);
+	starTxt:setTextColor(0,0,0)
+	starTxt.x = _W - 10
+	starTxt.y = _H - 10
 	
-	function txt:tap(e)
-		storyboard.gotoScene("mainMeny",{
-			effect = "slideDown", -- transition effect to implement
-			time = 250 -- duration of the transition effect in milliseconds
-		});
-	end
+	starsPic = display.newImageRect("images/star2.png",20,20)
+	starsPic.x = _W - 30
+	starsPic.y = _H - 15
 	
-	txt:addEventListener("tap",txt);
+	starGroup:insert(starsPic)
+	starGroup:insert(starTxt)
+	starGroup.alpha = 0.8
+	view:insert(starGroup)
+	
 	
 	scrollView = widget.newScrollView
 	{
@@ -150,20 +167,18 @@ function scene:createScene(e)
 		verticalScrollDisabled = true,
 		listener = scrollListener,
 	}
-	scrollView:setReferencePoint(display.CenterReferencePoint);
-	scrollView.x = _W * 0.5;
-	scrollView.y = _H * 0.5;	 
-	view:insert(background);
-	view:insert(scrollView);
-    view:insert(txt);
+	scrollView:setReferencePoint(display.CenterReferencePoint)
+	scrollView.x = _W * 0.5
+	scrollView.y = _H * 0.5	 
+	view:insert(scrollView)
 end
 
 function scene:enterScene(e)
 
-		unlockDevice = unlock()
-		unlockDevice.x = _W *0.5
-		unlockDevice.y = _H *0.5
-		unlockDevice.alpha = 0
+	unlockDevice = unlock()
+	unlockDevice.x = _W *0.5
+	unlockDevice.y = _H *0.5
+	unlockDevice.alpha = 0
 		
 	for i=1 ,numOfDevice do
 		device[i] = createDevices(i)
@@ -171,12 +186,6 @@ function scene:enterScene(e)
 		device[i].y = scrollView.contentHeight * 0.5
 		device[i].id = "Button" .. i
 		scrollView:insert(device[i])
-		
-		function spinIt(e)
-			device[i].rotation = (device[i].rotation - 2) % 360;
-		end
-		Runtime:addEventListener("enterFrame",spinIt);
-		
 		
 		function touchIt(e)
 			local t = e.target
@@ -220,6 +229,7 @@ function scene:enterScene(e)
 		end
 
 		device[i]:addEventListener("touch",touchIt)
+		
 		
 		
 		
@@ -286,14 +296,44 @@ function scene:enterScene(e)
 		]]
 		
 	end
+	
+	function spinIt(e)
+		device[1].rotation = (device[1].rotation - 2) % 360
+	end
+	Runtime:addEventListener("enterFrame",spinIt)
+	
+	function spinIt2(e)
+		device[2].rotation = (device[2].rotation - 2) % 360
+	end
+	Runtime:addEventListener("enterFrame",spinIt2)
+	
+	function spinIt3(e)
+		device[3].rotation = (device[3].rotation - 2) % 360
+	end
+	Runtime:addEventListener("enterFrame",spinIt3)
+	
+	function home()
+		storyboard.removeScene("mainMeny")
+		storyboard.gotoScene("mainMeny", {time =250, effect="crossFade"})
+	end
 
 	
 end
 
 function scene:exitScene(e)
 	--Stop listeners, timers, and animations (transitions)
-	Runtime:removeEventListener("enterFrame",spinIt);
-	storyboard.purgeScene("options");--Remove all scene1 display objects
+	print("hej")
+	
+	Runtime:removeEventListener("enterFrame",spinIt)
+	Runtime:removeEventListener("enterFrame",spinIt2)
+	Runtime:removeEventListener("enterFrame",spinIt3)
+
+
+	for i = numOfDevice, 1, -1 do
+			display.remove(device[i])
+			device[i] = nil
+	end
+
 end
 
 scene:addEventListener("createScene", scene);

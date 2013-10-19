@@ -2,22 +2,49 @@
 local storyboard = require("storyboard");
 local scene = storyboard.newScene()
 
+local mydata = require("mydata")
+local music = false
+
+local sheetInfo = require("Animation")
+local myImageSheet = graphics.newImageSheet( "images/Animation.png", sheetInfo:getSheet() )
+
 --Use audio.loadSound for very short sounds and fx
-local startMusic = audio.loadStream("music/SummertimeSadness.mp3");
+if mydata.startMusic == nil then
+	mydata.startMusic = audio.loadStream("sound/SummertimeSadness.mp3");
+	music = true
+end
 
 --Forward references so that we can access objects accross functions
-local bar;
-local spinIt;
+local bar
+local spinIt
+local numOfStars = 40
+local animationSprite = {} 
 
 function scene:createScene(e)	
 
 	local view = self.view
 	
-	local background = display.newRect(0, 0, _W, _H);
-	background:setFillColor(255,255,255);
+	local background = display.newRect(0, 0, _W, _H)
+	background:setFillColor(0,0,0)
+	view:insert(background)
 	
-	audio.seek(76000, startMusic)
-	audio.play(startMusic, {channel=1, loops=-1,fadein=1000})
+	for i=1 ,numOfStars do
+		animationSprite[i] = display.newSprite( myImageSheet , sheetInfo:getSequenceData() )
+		animationSprite[i].x =  math.random(0, _W)
+		animationSprite[i].y =  math.random(0, _H)
+		animationSprite[i]:setSequence( "star" )
+		timer.performWithDelay(math.random(0, 1000*i), function(e)
+			animationSprite[i]:play()
+		end, 60)
+		view:insert(animationSprite[i])
+	end
+	
+	if music then
+		audio.seek(76000, mydata.startMusic)
+		audio.play(mydata.startMusic, {channel=1, loops=-1,fadein=2000})
+		audio.fade( { channel=1, time=2000, volume=1 } )
+	end
+	
 	
 	local font = "HelveticaNeue" or native.systemFont;
 	local txt = display.newText("Meny",0,0,font,24);
@@ -86,12 +113,14 @@ function scene:createScene(e)
     
   
 	function playButton:tap(e)
+		storyboard.removeScene("nextLevel")
 		storyboard.gotoScene("nextLevel", "fade", 400)
 	end
 	
 	playButton:addEventListener("tap",playButton);
 	
 	function optionButton:tap(e)
+		storyboard.removeScene("shop")
 		storyboard.gotoScene("shop", "fade", 400)
 	end
 	
@@ -103,7 +132,6 @@ function scene:createScene(e)
 	
 	creditButton:addEventListener("tap",creditButton);
 	
-	view:insert(background);
     view:insert(txt);
     view:insert(playButton);
     view:insert(optionButton);
@@ -119,15 +147,16 @@ function scene:exitScene(e)
 	--Stop listeners, timers, and animations (transitions)
 	
 	storyboard.purgeScene("mainMeny") --Remove all scene1 display objects
+	for i = numOfStars, 1, -1 do
+		animationSprite[i]:pause()
+		--display.remove(animationSprite[i])
+		--animationSprite[i] = nil
+	end
 	
 	--playButton:removeEventListener("tap",playButton)
 	--optionButton:removeEventListener("tap",optionButton)
 	--creditButton:removeEventListener("tap",creditButton)
 	--audio.pause(1)
-	
-	audio.stop(1)
-	audio.dispose(startMusic)
-	startMusic = nil
 	--print("exitScene")
 end
 
@@ -137,4 +166,4 @@ scene:addEventListener("exitScene", scene);
 --There are more events you can listen for;
 --See the Corona docs
 
-return scenee
+return scene
