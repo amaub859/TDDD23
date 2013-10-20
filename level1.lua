@@ -48,9 +48,9 @@ local lvlCollisions = 3
 local lvlMonsters = 3
 mydata.lvl = 1
 local lvlNext = 2
-local lvlStar1 = "star4"
-local lvlStar2 = "star5"
-local lvlStar3 = "star6"
+local lvlStar1 = "star1"
+local lvlStar2 = "star2"
+local lvlStar3 = "star3"
 
 local myFont = (platform ~= "Android") and "Manteka" or system.nativeFont
 
@@ -210,7 +210,7 @@ local function levelComplete()
 	restartBtn.y = 80
 	
 	btnShop.x = -140
-	btnShop.y = -50
+	btnShop.y = 0
 	
 	frameGroup:insert(frame)
 	frameGroup:insert(blackFrame)
@@ -519,8 +519,7 @@ function scene:willEnterScene(e)
 	reloadBtn.alpha = 0.8
 	homeBtn.alpha = 0.8
 	
-	rain = require("rain")
-	--color = {255, 0, 0}
+	--[[rain = require("rain")
 	rain.new(view, 
 	{
 		snow,
@@ -528,7 +527,7 @@ function scene:willEnterScene(e)
 		alpha = 0.11,
 		speed = 0.5
 	
-	})
+	})]]
 	
 	----------------Create Ball-----------------
 	function resetBall()
@@ -1227,9 +1226,9 @@ function scene:exitScene(e) --Stop listeners, timers, and animations (transition
 	display.remove(output)
 	output = nil
 	
-	rain.pause()
-	display.remove(rain)
-	rain = nil
+	--rain.pause()
+	--display.remove(rain)
+	--rain = nil
 	
 	lvlComplete.alpha = 0
 	mydata.shot = 0

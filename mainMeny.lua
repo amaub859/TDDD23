@@ -23,6 +23,8 @@ local count = 1
 local count2 = 1
 local timerId = {}
 
+local myFont = (platform ~= "Android") and "Manteka" or system.nativeFont
+
 function play()
 	animationSprite[count2]:play()
 	count2 = count2 + 1
@@ -58,9 +60,10 @@ function scene:createScene(e)
 		audio.fade( { channel=1, time=2000, volume=1 } )
 	end
 	
-	local texttop = display.newImageRect("images/text.png",150,50)
+	local texttop = display.newText("Gravity", 0, 0, myFont,35)
+	texttop:setTextColor(244,204,34)
 	texttop.x = _W * 0.5
-	texttop.y = _H * 0.5 -120 
+	texttop.y = _H * 0.5 -130 
 	view:insert(texttop);
     
     -------------------------------------------------------
@@ -122,7 +125,7 @@ function scene:createScene(e)
 	count = 1
 	local playButton = Button.new()
 	playButton.x = _W * 0.5
-	playButton.y = _H * 0.5 -70 
+	playButton.y = _H * 0.5 -65
 	
 	count = 2
 	local optionButton = Button.new()
@@ -132,7 +135,7 @@ function scene:createScene(e)
 	count = 3
 	local creditButton = Button.new()
 	creditButton.x = _W * 0.5
-	creditButton.y = _H * 0.5 + 70
+	creditButton.y = _H * 0.5 + 65
     
   
 	function playButton:tap(e)

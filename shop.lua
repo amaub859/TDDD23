@@ -16,7 +16,7 @@ local spinIt;
 local deviceType = 0
 local numOfDevice = 4
 local device = {}
-local locked = true
+local locked = 0
 local numOfStars = 20
 local animationSprite = {}
 local count = 1
@@ -58,16 +58,16 @@ end
 
 local function onButtonBuy(e)
 	if e.phase == "ended" then
-		if locked == false then
+		if locked == 2 then
 			unlockDevice.alpha = 0
 			scrollView._view._isLocked = false
 			buttonGetNow.alpha = 1
 			buttonBuy.alpha = 0
-			if #mydata.star >= 3 then
+			if #mydata.star >= 13 then
 				mydata.deviceUnlocked = 2
 			end
 			
-			locked = true
+			--locked = true
 			storyboard.removeScene("nextLevel")
 			storyboard.gotoScene("nextLevel", {time =250, effect="crossFade"})
 		end	
@@ -169,7 +169,7 @@ function scene:createScene(e)
 			view:insert(animationSprite[i])
 	end
 	
-	homeBtn = display.newImageRect("images/foo.png",40,40)
+	homeBtn = display.newImageRect("images/homeBtn.png",40,40)
 	homeBtn.x = _W - 25
 	homeBtn.y = 25 
 	homeBtn.alpha = 0.8
@@ -242,15 +242,14 @@ function scene:enterScene(e)
 					title.text = "Morning star"
 					txt.y = -10
 					txt.text = "Shoot balls horizontally with a strong force"
-					if #mydata.star >= 3 then
-						locked = false
-					end		
+					locked = 1
+				
 				elseif t.id == "Button2" then
 					title.text = "Evening Star"
 					txt.y = 0
 					txt.text = "Shoots ball horizontally and diagonally with a good precision"
-					if #mydata.star >= 6 then
-						locked = false
+					if #mydata.star >= 13 then
+						locked = 2
 					end	 
 				end
 				

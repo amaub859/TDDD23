@@ -4,9 +4,18 @@ local scene = storyboard.newScene()
 
 local mydata = require("mydata")
 
+local sheetInfo = require("Animation")
+local myImageSheet = graphics.newImageSheet( "images/Animation.png", sheetInfo:getSheet() )
+
 local loadText
 local numOfLevels = 16;
+local numOfStars = 80
+local animationSprite = {}
 local levelButton = {}
+local timerId = {}
+local count = 1 
+
+local myFont = (platform ~= "Android") and "Manteka" or system.nativeFont
 
 local function createObject()
 	local view = scene.view
@@ -22,22 +31,44 @@ local function onButtonHome(e)
 	return true
 end
 
+function play()
+	animationSprite[count]:play()
+	count = count + 1
+end
+
+
 function scene:createScene(e)
 	local view = self.view
 	
 	--------------Background--------------
-	local background = display.newRect(0, 0, _W, _H);
-	background:setFillColor(255,255,255);
+	local background = display.newImageRect("images/background/bg.png",570,360)
+	background.x = _W * 0.5;
+	background.y = _H * 0.5;
 	view:insert(background);
 	--------------------------------------
+
+	for i=1 ,numOfStars do
+		
+			animationSprite[i] = display.newSprite( myImageSheet , sheetInfo:getSequenceData() )
+			animationSprite[i].x =  math.random(0, _W)
+			animationSprite[i].y =  math.random(0, _H)
+			animationSprite[i]:setSequence( "star" )
+			timerId[i] = timer.performWithDelay(math.random(0, 1000*i), play, 1)
+			view:insert(animationSprite[i])
+	end
+
+	local background2 = display.newImageRect("images/background/bg2levels.png",570,360)
+	background2.x = _W * 0.5;
+	background2.y = _H * 0.5;
+	view:insert(background2);
 	
 	local col = 1
 	local row = 1
 	
 	for i=1 ,numOfLevels do
 		levelButton[i] = display.newGroup()
-		local opened = display.newImageRect("images/foo.png", 50, 50)
-		local locked = display.newImageRect("images/bar.png", 50, 50)
+		local opened = display.newImageRect("images/levelButton/buttonDone.png", 60, 60)
+		local locked = display.newImageRect("images/levelButton/buttonLocked.png", 60, 60)
 		levelButton[i]:insert(opened)
 		levelButton[i]:insert(locked)
 		levelButton[i].tag = i
@@ -61,7 +92,8 @@ function scene:createScene(e)
 						mydata.collision = 0
 						mydata.reload = 0
 						storyboard.removeScene("level" .. mydata.lvl)
-						storyboard.gotoScene("level" .. e.target.tag)
+						storyboard.gotoScene("level" .. e.target.tag, {time =250, effect="crossFade"})
+						
 											
 						--display.getCurrentStage():setFocus(nil);
 						--self.hasFocus = false;
@@ -77,30 +109,29 @@ function scene:createScene(e)
 		end
 		
 		levelButton[i].x = col *_W/5
-		levelButton[i].y = row *_H/5
+		levelButton[i].y = row *_H/5 + 27
 		col = col + 1
 		
 		view:insert(levelButton[i])
 	end
-
 	
-	loadText = display.newText("Levels", 0, 0, native.systemFont,24)
-	loadText:setTextColor(0, 0, 0, 255)
+	loadText = display.newText("Levels", 0, 0, myFont,35)
+	loadText:setTextColor(244,204,34)
 	loadText.x = _W * 0.5
-	loadText.y = _H * 0.06
+	loadText.y = _H * 0.5 - 130
 	view:insert(loadText)
 	
-	homeBtn = display.newImageRect("images/foo.png",40,40)
+	homeBtn = display.newImageRect("images/homeBtn.png",40,40)
 	homeBtn.x = _W - 25
 	homeBtn.y = 25 
-	homeBtn.alpha = 0.8
+	homeBtn.alpha = 1
 	homeBtn:addEventListener("touch",onButtonHome)
 	view:insert(homeBtn)
 	
 	starGroup = display.newGroup()
 	local font = "HelveticaNeue" or native.systemFont;
 	starTxt = display.newText(string.format("%1dx", #mydata.star),0,0,font,15);
-	starTxt:setTextColor(0,0,0)
+	starTxt:setTextColor(244,204,34)
 	starTxt.x = _W - 10
 	starTxt.y = _H - 10
 	
@@ -122,9 +153,6 @@ function scene:enterScene(e)
 	storyboard.purgeScene("level1")
 	
 	function home()
-		--audio.stop(1)
-		--audio.dispose(mydata.startMusic)
-		--mydata.startMusic = nil
 		storyboard.removeScene("mainMeny")
 		storyboard.gotoScene("mainMeny", {time =250, effect="crossFade"})
 	end
@@ -134,7 +162,34 @@ end
 
 function scene:exitScene(e)
 	local view = self.view
-	--physics.stop()
+	
+	for i=1 ,#timerId do
+		timer.cancel(timerId[i])
+	end
+	
+	for i = numOfStars, 1, -1 do 
+		animationSprite[i]:pause()
+		display.remove(animationSprite[i])
+		animationSprite[i] = nil
+	end
+	
+	for i= numOfLevels, 1, -1 do 
+		display.remove(levelButton[i])
+		levelButton[i] = nil
+	end
+	
+	display.remove(starGroup)
+	starGroup = nil
+	
+	display.remove(homeBtn)
+	homeBtn = nil
+	
+	display.remove(background)
+	background = nil
+	
+	display.remove(background2)
+	background2 = nil
+
 end
 
 scene:addEventListener("createScene", scene);
