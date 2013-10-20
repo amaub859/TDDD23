@@ -5,6 +5,11 @@ local scene = storyboard.newScene()
 local mydata = require("mydata")
 local widget = require( "widget")
 
+local sheetInfo = require("Animation")
+local myImageSheet = graphics.newImageSheet( "images/Animation.png", sheetInfo:getSheet() )
+
+local myFont = (platform ~= "Android") and "Manteka" or system.nativeFont
+
 --Forward references so that we can access objects accross functions
 local bar;
 local spinIt;
@@ -12,14 +17,18 @@ local deviceType = 0
 local numOfDevice = 4
 local device = {}
 local locked = true
+local numOfStars = 20
+local animationSprite = {}
+local count = 1
+local timerId = {}
 
 local function createDevices(deviceType)
 	local view = scene.view
 	
 	if deviceType == 1 then
-		deviceImg = display.newImageRect("images/bar.png",100,100)
+		deviceImg = display.newImageRect("images/device.png",140,90)
 	elseif deviceType == 2 then
-		deviceImg = display.newImageRect("images/foo.png",100,100)
+		deviceImg = display.newImageRect("images/device2.png",140,90)
 	else
 		deviceImg = display.newImageRect("images/bar.png",100,100)	
 	end
@@ -80,11 +89,23 @@ local function unlock()
 		------------Level Completed------------ 
 	local frameGroup = display.newGroup()
 	
-	local frame = display.newImageRect("images/background.png",300,200)
-	local frameText = display.newText("Level Completed", 0, 0, native.systemFont, 24)
-	frameText:setTextColor(0,0,0)
+	local background = display.newRect(0, 0, 300, 200)
+	background:setFillColor(0,0,0)
+	background.alpha = 0.3
+	background.x = 0	
+	background.y = 0
 	
-	star1 = display.newImageRect("images/star2.png",50,50)
+	local textOptions = { text = "Morning star", x = 0, y = -70, width = 160, align = "left", font = myFont, fontSize = 20 }
+    title = display.newText(textOptions)
+    title:setTextColor(244,204,34)
+    
+    local textOptions = { text = "", x = 0, y = -10, width = 160, align = "left", font = myFont, fontSize = 15 }
+    txt = display.newText(textOptions)
+    txt:setTextColor(244,204,34)
+    frameGroup:insert(txt)
+	
+	
+	--star1 = display.newImageRect("images/star2.png",25,25)
 
 	buttonGetNow = display.newImageRect("images/nextBtn.png",40,40)
 	buttonGetNow:addEventListener("touch",onButtonGetNow)
@@ -96,11 +117,9 @@ local function unlock()
 	buttonExit = display.newImageRect("images/nextBtn.png",40,40)
 	buttonExit:addEventListener("touch",onButtonExit)
 
-	frameText.x = 0
-	frameText.y = -80
 	
-	star1.x = 0
-	star1.y = 0
+	--star1.x = 0
+	--star1.y = 0
 
 	buttonGetNow.x = 0
 	buttonGetNow.y = 80
@@ -111,9 +130,9 @@ local function unlock()
 	buttonExit.x = 120
 	buttonExit.y = -80
 	
-	frameGroup:insert(frame)
-	frameGroup:insert(frameText)
-	frameGroup:insert(star1)
+	frameGroup:insert(background)
+	frameGroup:insert(title)
+	--frameGroup:insert(star1)
 	frameGroup:insert(buttonGetNow)
 	frameGroup:insert(buttonBuy)
 	frameGroup:insert(buttonExit)
@@ -124,14 +143,31 @@ local function unlock()
 	---------------------------------------
 end
 
+function play()
+	animationSprite[count]:play()
+	count = count + 1
+end
+
 
 function scene:createScene(e)	
 
 	local view = self.view
 	
-	background = display.newRect(0, 0, _W, _H);
-	background:setFillColor(255,255,255);
-	view:insert(background)
+	local background = display.newImageRect("images/background/bg.png",570,360)
+	background.x = _W * 0.5;
+	background.y = _H * 0.5;
+	view:insert(background);
+	
+
+	for i=1 ,numOfStars do
+		
+			animationSprite[i] = display.newSprite( myImageSheet , sheetInfo:getSequenceData() )
+			animationSprite[i].x =  math.random(0, _W)
+			animationSprite[i].y =  math.random(0, _H)
+			animationSprite[i]:setSequence( "star" )
+			timerId[i] = timer.performWithDelay(math.random(0, 1000*i), play, 1)
+			view:insert(animationSprite[i])
+	end
 	
 	homeBtn = display.newImageRect("images/foo.png",40,40)
 	homeBtn.x = _W - 25
@@ -143,7 +179,7 @@ function scene:createScene(e)
 	starGroup = display.newGroup()
 	local font = "HelveticaNeue" or native.systemFont;
 	starTxt = display.newText(string.format("%1dx", #mydata.star),0,0,font,15);
-	starTxt:setTextColor(0,0,0)
+	starTxt:setTextColor(244,204,34)
 	starTxt.x = _W - 10
 	starTxt.y = _H - 10
 	
@@ -161,6 +197,7 @@ function scene:createScene(e)
 	{
 		width = _W,
 		height = _H * 0.5,
+		backgroundColor = {0,0,0,1},
 		--bottomPadding = 50,
 		--id = "onTop",
 		horizontalScrollDisabled = false,
@@ -174,6 +211,7 @@ function scene:createScene(e)
 end
 
 function scene:enterScene(e)
+	local view = self.view
 
 	unlockDevice = unlock()
 	unlockDevice.x = _W *0.5
@@ -200,11 +238,17 @@ function scene:enterScene(e)
 				unlockDevice.alpha = 1
 				
 				if t.id == "Button1" then
-					print(t.id)
+					--print(t.id)
+					title.text = "Morning star"
+					txt.y = -10
+					txt.text = "Shoot balls horizontally with a strong force"
 					if #mydata.star >= 3 then
 						locked = false
 					end		
 				elseif t.id == "Button2" then
+					title.text = "Evening Star"
+					txt.y = 0
+					txt.text = "Shoots ball horizontally and diagonally with a good precision"
 					if #mydata.star >= 6 then
 						locked = false
 					end	 
@@ -298,17 +342,17 @@ function scene:enterScene(e)
 	end
 	
 	function spinIt(e)
-		device[1].rotation = (device[1].rotation - 2) % 360
+		device[1].rotation = (device[1].rotation - 1) % 360
 	end
 	Runtime:addEventListener("enterFrame",spinIt)
 	
 	function spinIt2(e)
-		device[2].rotation = (device[2].rotation - 2) % 360
+		device[2].rotation = (device[2].rotation - 1) % 360
 	end
 	Runtime:addEventListener("enterFrame",spinIt2)
 	
 	function spinIt3(e)
-		device[3].rotation = (device[3].rotation - 2) % 360
+		device[3].rotation = (device[3].rotation - 1) % 360
 	end
 	Runtime:addEventListener("enterFrame",spinIt3)
 	
@@ -322,17 +366,26 @@ end
 
 function scene:exitScene(e)
 	--Stop listeners, timers, and animations (transitions)
-	print("hej")
 	
 	Runtime:removeEventListener("enterFrame",spinIt)
 	Runtime:removeEventListener("enterFrame",spinIt2)
 	Runtime:removeEventListener("enterFrame",spinIt3)
 
-
 	for i = numOfDevice, 1, -1 do
-			display.remove(device[i])
-			device[i] = nil
+		display.remove(device[i])
+		device[i] = nil
 	end
+	
+	for i=1 ,#timerId do
+		timer.cancel(timerId[i])
+	end
+	
+	for i = numOfStars, 1, -1 do 
+		animationSprite[i]:pause()
+		display.remove(animationSprite[i])
+		animationSprite[i] = nil
+	end
+	
 
 end
 

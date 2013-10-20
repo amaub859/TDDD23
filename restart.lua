@@ -4,84 +4,11 @@ local scene = storyboard.newScene()
 
 local mydata = require("mydata")
 
-local loadText
+local myFont = (platform ~= "Android") and "Manteka" or system.nativeFont;
 
-local function restartLevel(e)
-	storyboard.removeScene("level1")
-	storyboard.gotoScene("dummy")
-	return true
-end
-
-local function createObject()
-	local view = scene.view
-	local object = display.newImageRect("images/background.png", 100, 25);
-	
-	return object
-end
 
 function scene:createScene(e)
 	local view = self.view
-	
-	--------------Background--------------
-	local background = display.newRect(0, 0, _W, _H);
-	background:setFillColor(255,255,255);
-	view:insert(background);
-	--------------------------------------
-	
-	--------------scoreText---------------
-	local font = "HelveticaNeue" or native.systemFont;
-	local txt = display.newText("Score:",0,0,font,24);
-    txt:setTextColor(0,0,0);
-    txt.x = 50;
-    txt.y = 40;
-    view:insert(txt);
-    --------------------------------------
-    
-    ---------------lvlText----------------
-    local lvlText = display.newText(string.format("Level: %1d", mydata.lvl),0,0,font,24)
-    lvlText:setTextColor(0,0,0)
-    lvlText.x = 50
-    lvlText.y = 20
-    view:insert(lvlText)
-    --------------------------------------
-    
-    --------------device------------------   
-    device = display.newImageRect("images/foo.png",50,50);
-	device.x = 20;
-	device.y = _H *0.5;
-	
-	view:insert(device)
-	--------------------------------------
-	
-	----------------Ball------------------  
-	ball = display.newImageRect("images/foo.png",25,25)
-	ball.x = _W * 0.5 - 190
-	ball.y = _H * 0.5
-	ball.type = "ball"
-	
-	view:insert(ball)
-	--------------------------------------
-
-	----------------Objects----------------  
-	local playObject = createObject()
-	playObject.x = _W * 0.5
-	playObject.y = _H * 0.5 
-	view:insert(playObject)
-
-	local playObject2 = createObject()
-	playObject2.x = _W * 0.5 + 100
-	playObject2.y = _H * 0.5 
-    view:insert(playObject2)
-	--------------------------------------
-	
-	loadText = display.newText("You fell out to space!", 0, 0, native.systemFont,24)
-	loadText:setTextColor(0, 0, 0, 255)
-	loadText.x = _W * 0.5
-	loadText.y = 20
-	
-	view:insert(loadText)
-	
-	
 	
 	function reload(e)
 		if e.phase == "began" then
@@ -91,20 +18,42 @@ function scene:createScene(e)
 		end
 	end
 	
+	--------------Background----------------
+	background = display.newImageRect("images/lvlBackground" .. mydata.lvl .. ".png",_W,_H)
+	background.x = _W * 0.5;
+	background.y = _H * 0.5;
+	view:insert(background);
 	background:addEventListener("touch", reload)
+	----------------------------------------
 	
+	---------------textGroup----------------
+    lvlText = display.newText(string.format("Level %1d", mydata.lvl),0,0,myFont,24)
+    lvlText:setTextColor(255,156,0)
+    
+    lvlText.x = _W * 0.5
+    lvlText.y = _H * 0.3
+   
+    view:insert(lvlText)
+    --------------------------------------
+
 end
 
 function scene:enterScene(e)
 	local view = self.view
 	
-	storyboard.purgeScene("level1")
-	--loadText.alpha = 1.0
-	--transition.to(loadText, {time=500, alpha=0.0, onComplete=restartLevel})
+
 end
 
 function scene:exitScene(e)
 	local view = self.view
+	
+	display.remove(lvlText)
+	lvlText = nil
+	
+	background:removeEventListener("touch", reload)
+	display.remove(background)
+	background = nil
+	
 	physics.stop()
 end
 

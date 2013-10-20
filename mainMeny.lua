@@ -20,6 +20,13 @@ local spinIt
 local numOfStars = 40
 local animationSprite = {}
 local count = 1 
+local count2 = 1
+local timerId = {}
+
+function play()
+	animationSprite[count2]:play()
+	count2 = count2 + 1
+end
 
 function scene:createScene(e)	
 
@@ -31,14 +38,13 @@ function scene:createScene(e)
 	view:insert(background);
 	
 	for i=1 ,numOfStars do
-		animationSprite[i] = display.newSprite( myImageSheet , sheetInfo:getSequenceData() )
-		animationSprite[i].x =  math.random(0, _W)
-		animationSprite[i].y =  math.random(0, _H)
-		animationSprite[i]:setSequence( "star" )
-		timer.performWithDelay(math.random(0, 1000*i), function(e)
-			animationSprite[i]:play()
-		end, 60)
-		view:insert(animationSprite[i])
+		
+			animationSprite[i] = display.newSprite( myImageSheet , sheetInfo:getSequenceData() )
+			animationSprite[i].x =  math.random(0, _W)
+			animationSprite[i].y =  math.random(0, _H)
+			animationSprite[i]:setSequence( "star" )
+			timerId[i] = timer.performWithDelay(math.random(0, 1000*i), play, 1)
+			view:insert(animationSprite[i])
 	end
 	
 	local background2 = display.newImageRect("images/background/bg2.png",570,360)
@@ -163,11 +169,31 @@ function scene:exitScene(e)
 	--Stop listeners, timers, and animations (transitions)
 	
 	storyboard.purgeScene("mainMeny") --Remove all scene1 display objects
-	for i = numOfStars, 1, -1 do
+	
+	for i=1 ,#timerId do
+		timer.cancel(timerId[i])
+	end
+	
+	for i = numOfStars, 1, -1 do 
 		animationSprite[i]:pause()
 		--display.remove(animationSprite[i])
 		--animationSprite[i] = nil
 	end
+	
+	display.remove(background)
+	background = nil
+	
+	display.remove(background2)
+	background2 = nil
+	
+	display.remove(playButton)
+	playButton = nil
+	
+	display.remove(optionButton)
+	optionButton = nil
+	
+	display.remove(creditButton)
+	creditButton = nil
 	
 	--playButton:removeEventListener("tap",playButton)
 	--optionButton:removeEventListener("tap",optionButton)

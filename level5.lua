@@ -170,6 +170,7 @@ local function levelComplete()
 
 	buttonNext = display.newImageRect("images/nextBtn.png",40,40)
 	buttonNext:addEventListener("touch",onButtonNext)
+	buttonNext.alpha = 0
 	
 	buttonHome = display.newImageRect("images/homeBtn.png",40,40)
 	buttonHome:addEventListener("touch",onButtonHome)
@@ -241,7 +242,7 @@ function levelInfo()
 	local background = display.newRect(0, 0, _W, _H)
 	local frame = display.newImageRect("images/background_sky.png",300,200)
 	local frameText = display.newText("Level Mission:", 0, 0, native.systemFont, 24)
-	local frameText2 = display.newText("* All monster in 1 shot", 0, 0, native.systemFont, 24)
+	local frameText2 = display.newText("* All monster in " .. lvlShots .. " shot", 0, 0, myFont, 20)
 	
 	background:setFillColor(0,0,0)
 	background.alpha = 0.2
@@ -346,7 +347,7 @@ function scene:createScene(e)
 	--audio.setVolume(0.2, {channel = 1})
 	
 	--------------Background--------------
-	local background = display.newImageRect("images/background.png",_W,_H)
+	local background = display.newImageRect("images/lvlBackground" .. mydata.lvl .. ".png",_W,_H)
 	background.x = _W * 0.5;
 	background.y = _H * 0.5;
 	view:insert(background);
@@ -395,7 +396,7 @@ function scene:createScene(e)
     lvlText.x = 0
     lvlText.y = 0
     
-    missionText = display.newText(string.format("All monsters in 1 shot", mydata.lvl),0,0,myFont,24)
+    missionText = display.newText("All monster in " .. lvlShots .. " shot", 0, 0, myFont, 24)
     missionText:setTextColor(255,156,0)
     missionText.x = 0
     missionText.y = 30
@@ -535,9 +536,13 @@ function scene:willEnterScene(e)
 	
 	---------------Create Device----------------
 	function resetDevice()
-		device = display.newImageRect("images/device.png",65,40);
-		device.x = 35;
-		device.y = _H *0.5;
+		if mydata.deviceUnlocked == 2 then
+			device = display.newImageRect("images/device2.png",65,40);
+		else
+			device = display.newImageRect("images/device.png",65,40);
+		end
+		device.x = 35
+		device.y = _H *0.5
 		
 		physics.addBody(device,"kinematic",{
 		density = 10, friction = 0.5, bounce = 0.2, radius = 12.5,
@@ -950,6 +955,10 @@ function scene:enterScene(e)
 			
 			lvlComplete.alpha = 1
 			
+			if mydata.score >= lvlMonsters and mydata.shot <= lvlShots then
+				buttonNext.alpha = 1
+			end
+			
 			infoBtn.alpha = 0
 			reloadBtn.alpha = 0
 			homeBtn.alpha = 0
@@ -1031,6 +1040,7 @@ function scene:enterScene(e)
 	
 	
 	function restart()
+		storyboard.removeScene("restart")
 		storyboard.gotoScene("restart", {time =250, effect="crossFade"})
 	end
 	
