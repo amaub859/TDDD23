@@ -13,8 +13,8 @@ function scene:createScene(e)
 	function reload(e)
 		if e.phase == "began" then
 			mydata.restart = mydata.restart + 1
-			storyboard.removeScene("level"..mydata.lvl)
-			storyboard.gotoScene("level"..mydata.lvl)
+			storyboard.removeScene("levels")
+			storyboard.gotoScene("levels")
 		end
 	end
 	

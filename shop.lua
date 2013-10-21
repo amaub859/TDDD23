@@ -107,25 +107,25 @@ local function unlock()
 	
 	--star1 = display.newImageRect("images/star2.png",25,25)
 
-	buttonGetNow = display.newImageRect("images/nextBtn.png",40,40)
+	buttonGetNow = display.newImageRect("images/getNowBtn.png",120,40)
 	buttonGetNow:addEventListener("touch",onButtonGetNow)
 	
-	buttonBuy = display.newImageRect("images/star2.png",40,40)
+	buttonBuy = display.newImageRect("images/unlockBtn.png",120,40)
 	buttonBuy:addEventListener("touch",onButtonBuy)
 	buttonBuy.alpha = 0
 	
-	buttonExit = display.newImageRect("images/nextBtn.png",40,40)
+	buttonExit = display.newImageRect("images/exitBtn.png",20,20)
 	buttonExit:addEventListener("touch",onButtonExit)
 
 	
 	--star1.x = 0
 	--star1.y = 0
 
-	buttonGetNow.x = 0
-	buttonGetNow.y = 80
+	buttonGetNow.x = -23
+	buttonGetNow.y = 70
 	
-	buttonBuy.x = 0
-	buttonBuy.y = 80
+	buttonBuy.x = -23
+	buttonBuy.y = 70
 	
 	buttonExit.x = 120
 	buttonExit.y = -80

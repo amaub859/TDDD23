@@ -11,14 +11,15 @@ function scene:createScene(e)
 
 	local view = self.view
 	
-	background = display.newRect(0, 0, _W, _H);
-	background:setFillColor(255,255,255);
+	background = display.newImageRect("images/background/bg.png",570,360)
+	background.x = _W * 0.5;
+	background.y = _H * 0.5;
 	
 	local font = "HelveticaNeue" or native.systemFont;
     
     --Remember: this is local to the entire scene (line 6)
-    foo = display.newImageRect("images/foo.png",100,100);
-	foo.x = _W * 0.5;
+    foo = display.newImageRect("images/logo.png",165,50);
+	foo.x = _W * 0.5 + 30;
 	foo.y = _H * 0.5;
 	
 	view:insert(background);
@@ -30,8 +31,8 @@ function scene:enterScene(e)
 	anim = transition.to(foo,
 	{
 		time = 5000,
-		xScale = 2,
-		yScale = 2,
+		xScale = 3,
+		yScale = 3,
 		transition = easing.inQuad,
 		onComplete = function() -- define a callback function to fire when the animation is completed
 			--background:addEventListener("touch", startAnim)

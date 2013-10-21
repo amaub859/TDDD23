@@ -101,7 +101,7 @@ end
 SheetInfo.sequenceData = {
     {
     name="star",
-    frames={1,2,3,4,5},
+    frames={1,2,3,2,1},
     time=2000,
     loopCount=0,
     }

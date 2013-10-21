@@ -36,23 +36,97 @@ local movingObject = {}
 local target = {}
 local gravityTarget = {}
 local lvlComplete = nil
-local numOfTarget = 3
-local numOfDynamicObject = 0
-local numOfStaticObject = 2
-local numOfMovingObject = 1
-local numOfGravityTarget = 0
 local anim
 
-local lvlShots = 2
-local lvlCollisions = 5
-local lvlMonsters = 3
-mydata.lvl = 6
-local lvlNext = 7
-local lvlStar1 = "star16"
-local lvlStar2 = "star17"
-local lvlStar3 = "star18"
+if mydata.lvl == 1 then
+	print(mydata.lvl)
+	print("Hej")
+	numOfTarget = 3
+	numOfDynamicObject = 0
+	numOfStaticObject = 0
+	numOfMovingObject = 0
+	numOfGravityTarget = 0
+	lvlShots = 1
+	lvlCollisions = 3
+	lvlMonsters = 3
+	lvlNext = 2
+	lvlStar1 = "star1"
+	lvlStar2 = "star2"
+	lvlStar3 = "star3"
+elseif mydata.lvl == 2 then
+	numOfTarget = 3
+	numOfDynamicObject = 1
+	numOfStaticObject = 3
+	numOfMovingObject = 0
+	numOfGravityTarget = 0
+	
+	lvlShots = 1
+	lvlCollisions = 3
+	lvlMonsters = 3
+	lvlNext = 3
+	lvlStar1 = "star4"
+	lvlStar2 = "star5"
+	lvlStar3 = "star6"
+elseif mydata.lvl == 3 then	
+	numOfTarget = 3
+	numOfDynamicObject = 1
+	numOfStaticObject = 3
+	numOfMovingObject = 3
+	numOfGravityTarget = 0
+	
+	lvlShots = 2
+	lvlCollisions = 6
+	lvlMonsters = 3
+	lvlNext = 4
+	lvlStar1 = "star7"
+	lvlStar2 = "star8"
+	lvlStar3 = "star9"
+elseif mydata.lvl == 4 then	
+	numOfTarget = 3
+	numOfDynamicObject = 0
+	numOfStaticObject = 4
+	numOfMovingObject = 0
+	numOfGravityTarget = 1
+	
+	lvlShots = 1
+	lvlCollisions = 7
+	lvlMonsters = 3
+	lvlNext = 5
+	lvlStar1 = "star10"
+	lvlStar2 = "star11"
+	lvlStar3 = "star12"
+elseif mydata.lvl == 5 then	
+	numOfTarget = 3
+	numOfDynamicObject = 1
+	numOfStaticObject = 4
+	numOfMovingObject = 2
+	numOfGravityTarget = 1
+	
+	lvlShots = 1
+	lvlCollisions = 11
+	lvlMonsters = 3
+	lvlNext = 6
+	lvlStar1 = "star13"
+	lvlStar2 = "star14"
+	lvlStar3 = "star15"	
+elseif mydata.lvl == 6 then	
+	numOfTarget = 3
+	numOfDynamicObject = 0
+	numOfStaticObject = 2
+	numOfMovingObject = 1
+	numOfGravityTarget = 0
+	
+	lvlShots = 2
+	lvlCollisions = 5
+	lvlMonsters = 3
+	lvlNext = 7
+	lvlStar1 = "star16"
+	lvlStar2 = "star17"
+	lvlStar3 = "star18"		
 
-local myFont = (platform ~= "Android") and "Manteka" or system.nativeFont;
+end
+
+local myFont = (platform ~= "Android") and "Manteka" or system.nativeFont
 
 ------------Functions------------ 
 
@@ -76,17 +150,17 @@ local function onButtonHome(e)
 end
 
 
-local function onReloadBtn(e)
+local function onRestartBtn(e)
 	if e.phase == "ended" then
-		timer.performWithDelay(20, reload)
+		timer.performWithDelay(20, restart)
 	end
 	return true
 end
 
 
-local function onRestartBtn(e)
+local function onReloadBtn(e)
 	if e.phase == "ended" then
-		timer.performWithDelay(20, restart)
+		timer.performWithDelay(20, reload)
 	end
 	return true
 end
@@ -210,7 +284,7 @@ local function levelComplete()
 	restartBtn.y = 80
 	
 	btnShop.x = -140
-	btnShop.y = -50
+	btnShop.y = 0
 	
 	frameGroup:insert(frame)
 	frameGroup:insert(blackFrame)
@@ -242,7 +316,7 @@ function levelInfo()
 	local background = display.newRect(0, 0, _W, _H)
 	local frame = display.newImageRect("images/background_sky.png",300,200)
 	local frameText = display.newText("Level Mission:", 0, 0, native.systemFont, 24)
-	local frameText2 = display.newText("* All monster in " .. lvlShots .. " shots", 0, 0, myFont, 20)
+	local frameText2 = display.newText("* All monster in " .. lvlShots .. " shot", 0, 0, myFont, 20)
 	
 	background:setFillColor(0,0,0)
 	background.alpha = 0.2
@@ -396,7 +470,7 @@ function scene:createScene(e)
     lvlText.x = 0
     lvlText.y = 0
     
-    missionText = display.newText("All monster in " .. lvlShots .. " shots", 0, 0, myFont, 24)
+    missionText = display.newText("All monster in " .. lvlShots .. " shot", 0, 0, myFont, 24)
     missionText:setTextColor(255,156,0)
     missionText.x = 0
     missionText.y = 30
@@ -412,31 +486,85 @@ function scene:createScene(e)
     
 	
 	-----------staticObjects--------------  
+	print (mydata.lvl)
 	for i=1 ,numOfStaticObject do
-		if i == 1 then
-			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)
-			staticObject[i].x = _W * 0.5 
-			staticObject[i].y = _H * 0.5
-			staticObject[i]:rotate(45) 
-		elseif i == 2 then	
-			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)
-			staticObject[i].x = _W * 0.5 - 50
-			staticObject[i].y = _H * 0.5 + 50
-			staticObject[i]:rotate(45)
-		elseif i == 3 then	
-			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)	
-			staticObject[i].x = _W
-			staticObject[i].y = _H * 0.5 + 47
-			staticObject[i]:rotate(90)
-		elseif i == 4 then		
-			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)
-			staticObject[i].x = _W * 0.5
-			staticObject[i].y = _H * 0.5
-		end
+		if mydata.lvl == 2 then
+			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25);
+			if i == 1 then
+				staticObject[i].x = _W * 0.5
+				staticObject[i].y = _H 
+			elseif i == 2 then	
+				staticObject[i].x = _W * 0.5
+				staticObject[i].y = 0
+			elseif i == 3 then		
+				staticObject[i].x = _W
+				staticObject[i].y = _H * 0.5
+				staticObject[i]:rotate(90)
+			end
+		elseif mydata.lvl == 3 then
+			staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25);
+			if i == 1 then
+				staticObject[i].x = _W * 0.5
+				staticObject[i].y = _H * 0.5 + 160
+			elseif i == 2 then	
+				staticObject[i].x = _W * 0.5
+				staticObject[i].y = _H * 0.5 - 160
+			elseif i == 3 then		
+				staticObject[i].x = _W
+				staticObject[i].y = _H * 0.5
+				staticObject[i]:rotate(90)
+			end 
+		elseif mydata.lvl == 4 or mydata.lvl == 5 then	
+			if i == 1 then
+				staticObject[i] = display.newImageRect("images/staticObject.png", 400, 25)
+				staticObject[i].x = _W * 0.5 + 74
+				staticObject[i].y = _H * 0.5 + 160
+			elseif i == 2 then	
+				staticObject[i] = display.newImageRect("images/staticObject.png", 160, 25)
+				staticObject[i].x = _W * 0.5 - 112
+				staticObject[i].y = _H * 0.5 + 67
+				staticObject[i]:rotate(90)
+			elseif i == 3 then	
+				staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)	
+				staticObject[i].x = _W
+				staticObject[i].y = _H * 0.5 + 47
+				staticObject[i]:rotate(90)
+			elseif i == 4 then		
+				staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)
+				staticObject[i].x = _W * 0.5
+				staticObject[i].y = _H * 0.5
+			end	
+		elseif mydata.lvl == 6 then
+			if i == 1 then
+				staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)
+				staticObject[i].x = _W * 0.5 
+				staticObject[i].y = _H * 0.5
+				staticObject[i]:rotate(45) 
+			elseif i == 2 then	
+				staticObject[i] = display.newImageRect("images/staticObject.png", 200, 25)
+				staticObject[i].x = _W * 0.5 - 50
+				staticObject[i].y = _H * 0.5 + 50
+				staticObject[i]:rotate(45)
+			end
+		end	
+		
 		staticObject[i].type = "staticObject"
 		view:insert(staticObject[i]);
 	end
 	---------------------------------------
+	
+	 ------------gameInfoText--------------
+    gameInfoText = display.newText(string.format("<-- Drag the ball to left!"),0,0,myFont,10)
+    gameInfoText:setTextColor(255,156,0)
+    gameInfoText.alpha = 0
+    
+    view:insert(gameInfoText)
+    
+    aim1 = display.newImage( "images/aim.png" )
+	aim1.alpha = 0 
+	view:insert(aim1)
+    
+    --------------------------------------
 	
 	--------------scoreText---------------
 	local textOptions = { text = "Score: " .. mydata.score, x = 110, y = 15, width = 200, align = "left", font = myFont, fontSize = 12 }
@@ -514,6 +642,16 @@ function scene:willEnterScene(e)
 	reloadBtn.alpha = 0.8
 	homeBtn.alpha = 0.8
 	
+	--[[rain = require("rain")
+	rain.new(view, 
+	{
+		snow,
+		width = 1,
+		alpha = 0.11,
+		speed = 0.5
+	
+	})]]
+	
 	----------------Create Ball-----------------
 	function resetBall()
 		ball = display.newImageRect("images/astroid.png",25,25)
@@ -542,8 +680,8 @@ function scene:willEnterScene(e)
 		else
 			device = display.newImageRect("images/device.png",65,40);
 		end
-		device.x = 35
-		device.y = _H *0.5
+		device.x = 35;
+		device.y = _H *0.5;
 		
 		physics.addBody(device,"kinematic",{
 		density = 10, friction = 0.5, bounce = 0.2, radius = 12.5,
@@ -562,6 +700,10 @@ function scene:willEnterScene(e)
 				display.getCurrentStage():setFocus(self)
 				self.hasFocus = true
 				
+				aim1.alpha = 0
+				gameInfoText.alpha = 0
+				aim1.xScale=1
+				aim1.yScale=1
 				device.isFixedRotation = true
 				
 			elseif(self.hasFocus) then
@@ -598,15 +740,53 @@ function scene:willEnterScene(e)
 	if mydata.time ~= 0 then 
 		for i=1 ,numOfTarget do
 			target[i] = spawnTargets()
-			if i == 1 then
-				target[i].x = _W * 0.5 - 45
-				target[i].y = _H * 0.5 
-			elseif i == 2 then
-				target[i].x = _W * 0.5 
-				target[i].y = _H * 0.5 + 45  
-			elseif i == 3 then
-				target[i].x = _W * 0.5 + 100
-				target[i].y = _H * 0.5 + 140
+			if mydata.lvl == 1 then
+				target[i].x = _W * 0.3 + (i * 100)
+				target[i].y = _H * 0.5
+			elseif mydata.lvl == 2 then
+				if i == 1 then
+					target[i].x = _W * 0.5
+					target[i].y = _H * 0.5
+				elseif i == 2 then	
+					target[i].x = _W * 0.3
+					target[i].y = _H * 0.3	
+				elseif i == 3 then	
+					target[i].x = _W * 0.7
+					target[i].y = _H * 0.7	
+				end
+			elseif mydata.lvl == 3 then
+				if i == 1 then
+					target[i].x = _W * 0.5
+					target[i].y = _H * 0.5
+				elseif i == 2 then	
+					target[i].x = _W * 0.5
+					target[i].y = _H * 0.2	
+				elseif i == 3 then	
+					target[i].x = _W * 0.7
+					target[i].y = _H * 0.7	
+				end	
+			elseif mydata.lvl == 4 or mydata.lvl == 5 then
+				if i == 1 then
+					target[i].x = _W * 0.5 
+					target[i].y = _H * 0.65 
+				elseif i == 2 then
+					target[i].x = _W * 0.5 
+					target[i].y = _H * 0.85  
+				elseif i == 3 then
+					target[i].x = _W * 0.35 
+					target[i].y = _H * 0.75 
+				end
+			elseif mydata.lvl == 6 then
+				if i == 1 then
+					target[i].x = _W * 0.5 - 45
+					target[i].y = _H * 0.5 
+				elseif i == 2 then
+					target[i].x = _W * 0.5 
+					target[i].y = _H * 0.5 + 45  
+				elseif i == 3 then
+					target[i].x = _W * 0.5 + 100
+					target[i].y = _H * 0.5 + 140
+				end
 			end
 			target[i].type = "target" .. tostring(i)
 			view:insert(target[i])
@@ -617,9 +797,9 @@ function scene:willEnterScene(e)
 	---------------Create Gravity Targets----------------  
 	for i=1 ,numOfGravityTarget do
 		gravityTarget[i] = spawnGravityTargets()
-		if i == 1 then
+		if mydata.lvl == 4 or 5 then
 			gravityTarget[i].x = _W * 0.35
-			gravityTarget[i].y = _H * 0.1
+			gravityTarget[i].y = _H * 0.2
 		end
 		gravityTarget[i].type = "gravityTarget" .. tostring(i)
 		view:insert(gravityTarget[i])
@@ -629,11 +809,16 @@ function scene:willEnterScene(e)
 	-----------Create dynamicObjects-------------  
 	for i=1 ,numOfDynamicObject do
 		dynamicObject[i] = createDynamicObject()
-		if i == 1 then
-			dynamicObject[i].x = _W * 0.5 + 150
-			dynamicObject[i].y = _H * 0.5 - 50
+		if mydata.lvl == 1 or mydata.lvl == 2 then
+			dynamicObject[i].x = _W * 0.65
+			dynamicObject[i].y = _H * 0.1 + (i * 120)
+		elseif mydata.lvl == 3 then
+			dynamicObject[i].x = _W * 0.8
+			dynamicObject[i].y = _H * 0.1 + (i * 120)
+		elseif mydata.lvl == 5 then
+			dynamicObject[i].x = _W * 0.5
+			dynamicObject[i].y = _H * 0.75
 		end
-		
 		dynamicObject[i].type = "dynamicObject"
 		view:insert(dynamicObject[i])
 	end
@@ -642,23 +827,48 @@ function scene:willEnterScene(e)
 	------------Create movingObject--------------  
 	--print(mydata.reload)
 		for i=1 ,numOfMovingObject do
-			if i == 1 then
+			if mydata.lvl == 3 then
 				movingObject[i] = display.newImageRect("images/staticObject.png", 100, 15);
-				movingObject[i].x = _W * 0.5 - 100
-				movingObject[i].y = _H * 0.5 - 50
-				movingObject[i]:rotate(-45)	
-			elseif i == 2 then	
-				movingObject[i] = display.newImageRect("images/staticObject.png", 50, 15);
-				movingObject[i].x = _W * 0.35
-				movingObject[i].y = _H * 0.4
-				movingObject[i]:rotate(90)	
-			elseif i == 3 then	
-				movingObject[i].x = _W * 0.65
-				movingObject[i].y = _H * 0.3
-				movingObject[i]:rotate(90)	
+				if i == 1 then
+					movingObject[i].x = _W * 0.5 - 40
+					movingObject[i].y = _H * 0.5 - 100
+					movingObject[i]:rotate(90)
+				elseif i == 2 then	
+					movingObject[i].x = _W * 0.5
+					movingObject[i].y = _H * 0.5 - 40
+				elseif i == 3 then	
+					movingObject[i].x = _W * 0.5 + 40
+					movingObject[i].y = _H * 0.5 - 100
+					movingObject[i]:rotate(90)	
+				end
+				physics.addBody(movingObject[i],"dynamic",{density = 10, friction = 0, bounce = 1})
+			elseif mydata.lvl == 5 then
+				if i == 1 then
+					movingObject[i] = display.newImageRect("images/staticObject.png", 100, 15);
+					movingObject[i].x = _W * 0.65
+					movingObject[i].y = _H * 0.33
+					movingObject[i]:rotate(90)	
+				elseif i == 2 then	
+					movingObject[i] = display.newImageRect("images/staticObject.png", 50, 15);
+					movingObject[i].x = _W * 0.35
+					movingObject[i].y = _H * 0.4
+					movingObject[i]:rotate(90)	
+				elseif i == 3 then	
+					movingObject[i].x = _W * 0.65
+					movingObject[i].y = _H * 0.3
+					movingObject[i]:rotate(90)	
+				end
+				physics.addBody(movingObject[i],"dynamic",{density = 25, friction = 0.6, bounce = 0.2})
+			elseif mydata.lvl == 6 then
+				if i == 1 then
+					movingObject[i] = display.newImageRect("images/staticObject.png", 100, 15);
+					movingObject[i].x = _W * 0.5 - 100
+					movingObject[i].y = _H * 0.5 - 50
+					movingObject[i]:rotate(-45)	
+				end
+				physics.addBody(movingObject[i],"dynamic",{density = 10, friction = 0, bounce = 1})
 			end
 			movingObject[i].type = "movingObject"
-			physics.addBody(movingObject[i],"dynamic",{density = 25, friction = 0.6, bounce = 0.2})
 			view:insert(movingObject[i])
 		end
 	--------------------------------------------
@@ -724,6 +934,8 @@ function scene:willEnterScene(e)
 	lvlShotsTxt:toFront()
 	starGroup:toFront()
 	textGroup:toFront()
+	gameInfoText:toFront()
+	aim1:toFront()
 	--------------------------------------------
 
 	-------------Add Physic Bodies--------------
@@ -737,7 +949,11 @@ function scene:willEnterScene(e)
 	rightWall.isSensor = true
 	
 	for i=1 ,numOfStaticObject do
-		physics.addBody(staticObject[i],"static",{density = 10, friction = 0.6, bounce = 0.2})
+		if mydata.lvl == 5 then
+			physics.addBody(staticObject[i],"static",{density = 10, friction = 0.6, bounce = 0.2})
+		else
+			physics.addBody(staticObject[i],"static",{density = 10, friction = 0, bounce = 1})
+		end
 	end
 
 	---------------------------------------------
@@ -756,8 +972,32 @@ function scene:enterScene(e)
 	time = 3000, 
 	alpha = 0,
 	onComplete = function()
+		
+		aim1.x = ball.x 
+		aim1.y = ball.y
+		
+		anim1 = transition.to( aim1, { 
+		alpha=0.4, 
+		xScale=0.25, 
+		yScale=0.25, 
+		time=200, 
+		onComplete = function()
+			transition.cancel(anim1)
+			anim1 = nil
+		end
+		})
+		
+		gameInfoText.x = ball.x + 100
+		gameInfoText.y = ball.y
+		
+		anim = transition.to(gameInfoText,{
+		time = 200,
+		alpha = 0.8,
+		onComplete = function()
 			transition.cancel(anim)
 			anim = nil
+		end
+		})
 	end
 	})
 	---------------------------------------------
@@ -785,8 +1025,8 @@ function scene:enterScene(e)
 			starGroup.alpha = 0.2
 			levelScore.alpha = 0.2
 			lvlShotsTxt.alpha = 0.2
-			
 			collisionText.alpha = 0.2
+			
 			physics.setGravity(0,0)
 			ball.bodyType = "dynamic"
 			ball.isSensor = false
@@ -822,9 +1062,18 @@ function scene:enterScene(e)
 			if anim ~= nil then
 				transition.cancel(anim)
 				anim = nil
+				gameInfoText.alpha = 0
+				aim1.alpha = 0
+				aim1.xScale=1
+				aim1.yScale=1
 				textGroup.alpha = 0
+			else
+				gameInfoText.alpha = 0
+				aim1.alpha = 0
+				aim1.xScale=1
+				aim1.yScale=1
 			end
-			
+		
 			audio.play(soundEffects["aimSound"])
 
 			
@@ -880,7 +1129,11 @@ function scene:enterScene(e)
 				
 				-- add physic body to the dynamic objects
 				for i=1 ,numOfDynamicObject do
-					physics.addBody(dynamicObject[i],"static",{density = 10, friction = 0.6, bounce = 0.2})
+					if mydata.lvl == 5 then
+						physics.addBody(dynamicObject[i],"static",{density = 10, friction = 0.6, bounce = 0.2})
+					else
+						physics.addBody(dynamicObject[i],"static",{density = 10, friction = 0.5, bounce = 1})
+					end
 					-- Remove event listeners for the dynamic objects
 					dynamicObject[i]._tableListeners = nil
 				end
@@ -895,12 +1148,12 @@ function scene:enterScene(e)
 					
 				ball:removeEventListener( "touch", shootBall )
 				
-				mydata.shot = mydata.shot + 1
-				lvlShotsTxt.text = "Shots: " .. mydata.shot
-				
 				audio.stop(2)
 				audio.seek(300, soundEffects["shotSound"])
 				audio.play(soundEffects["shotSound"], {channel = 3, duration= 400})
+				
+				mydata.shot = mydata.shot + 1
+				lvlShotsTxt.text = "Shots: " .. mydata.shot
 				--audio.dispose(aimSound)
 				--aimSound = nil
 			end
@@ -922,7 +1175,7 @@ function scene:enterScene(e)
 			if e.target.type == "ball" and e.other.type == "ground" or e.other.type == "rightWall" or
 			e.other.type == "leftWall" or e.other.type == "ceiling" then
 				
-				timer.performWithDelay(20, reset)
+				timer.performWithDelay(10, reset)
 			
 			elseif e.target.type == "ball" and e.other.type == "staticObject" or e.other.type == "dynamicObject" 
 			or e.other.type == "movingObject" then
@@ -946,8 +1199,6 @@ function scene:enterScene(e)
 					display.remove(gravityTarget[i])
 					gravityTarget[i] = nil
 					physics.setGravity(0,9.82)
-					--mydata.score = mydata.score + 1
-					--levelScore.text = "Score: " .. mydata.score
 				end	
 			end
 		end
@@ -1007,7 +1258,7 @@ function scene:enterScene(e)
 			end
 			---------------------------------------
 			
-			if mydata.lvlUnlocked <= mydata.lvl then
+			if mydata.score >= lvlMonsters and mydata.shot <= lvlShots and mydata.lvlUnlocked <= mydata.lvl then
 				mydata.lvlUnlocked = lvlNext
 			end	
 			starTxt.text = #mydata.star .. "x"
@@ -1163,9 +1414,16 @@ function scene:exitScene(e) --Stop listeners, timers, and animations (transition
 		transition.cancel(anim)
 		anim = nil
 		textGroup.alpha = 1
-
+		gameInfoText.alpha = 0
+		aim1.alpha = 0
+		aim1.xScale=1
+		aim1.yScale=1
 	else
 		textGroup.alpha = 1
+		gameInfoText.alpha = 0
+		aim1.alpha = 0
+		aim1.xScale=1
+		aim1.yScale=1
 	end
 	
 	if pJoints[1] ~= nil then
@@ -1179,6 +1437,10 @@ function scene:exitScene(e) --Stop listeners, timers, and animations (transition
 	end
 	display.remove(output)
 	output = nil
+	
+	--rain.pause()
+	--display.remove(rain)
+	--rain = nil
 	
 	lvlComplete.alpha = 0
 	mydata.shot = 0

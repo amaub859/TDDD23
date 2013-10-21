@@ -8,7 +8,7 @@ local sheetInfo = require("Animation")
 local myImageSheet = graphics.newImageSheet( "images/Animation.png", sheetInfo:getSheet() )
 
 local loadText
-local numOfLevels = 16;
+local numOfLevels = 12;
 local numOfStars = 80
 local animationSprite = {}
 local levelButton = {}
@@ -67,7 +67,7 @@ function scene:createScene(e)
 	
 	for i=1 ,numOfLevels do
 		levelButton[i] = display.newGroup()
-		local opened = display.newImageRect("images/levelButton/buttonDone.png", 60, 60)
+		local opened = display.newImageRect("images/levelButton/levelBtn" .. i .. ".png", 60, 60)
 		local locked = display.newImageRect("images/levelButton/buttonLocked.png", 60, 60)
 		levelButton[i]:insert(opened)
 		levelButton[i]:insert(locked)
@@ -91,8 +91,9 @@ function scene:createScene(e)
 						mydata.score = 0
 						mydata.collision = 0
 						mydata.reload = 0
-						storyboard.removeScene("level" .. mydata.lvl)
-						storyboard.gotoScene("level" .. e.target.tag, {time =250, effect="crossFade"})
+						mydata.lvl = e.target.tag
+						storyboard.removeScene("levels")
+						storyboard.gotoScene("levels", {time =250, effect="crossFade"})
 						
 											
 						--display.getCurrentStage():setFocus(nil);
@@ -109,7 +110,7 @@ function scene:createScene(e)
 		end
 		
 		levelButton[i].x = col *_W/5
-		levelButton[i].y = row *_H/5 + 27
+		levelButton[i].y = row *_H/5 + 40
 		col = col + 1
 		
 		view:insert(levelButton[i])

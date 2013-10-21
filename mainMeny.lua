@@ -75,14 +75,14 @@ function scene:createScene(e)
 		local btn = display.newGroup()
 
 		if count == 1 then		
-			 offIMG = params and params.off or "images/buttons/StartButton.png"
-			 onIMG = params and params.on or "images/buttons/StartButtonIn.png"
+			 offIMG = params and params.off or "images/buttons/startButton.png"
+			 onIMG = params and params.on or "images/buttons/startButtonIn.png"
 		elseif count == 2 then
-			 offIMG = params and params.off or "images/buttons/SettingsButton.png"
-			 onIMG = params and params.on or "images/buttons/SettingsButtonIn.png"
+			 offIMG = params and params.off or "images/buttons/settingsButton.png"
+			 onIMG = params and params.on or "images/buttons/settingsButtonIn.png"
 		elseif count == 3 then
-			 offIMG = params and params.off or "images/buttons/CreditsButton.png"
-			 onIMG = params and params.on or "images/buttons/CreditsButtonIn.png"
+			 offIMG = params and params.off or "images/buttons/shopButton.png"
+			 onIMG = params and params.on or "images/buttons/shopButtonIn.png"
 		end
 
 		
@@ -133,9 +133,9 @@ function scene:createScene(e)
 	optionButton.y = _H * 0.5
 	
 	count = 3
-	local creditButton = Button.new()
-	creditButton.x = _W * 0.5
-	creditButton.y = _H * 0.5 + 65
+	local shopButton = Button.new()
+	shopButton.x = _W * 0.5
+	shopButton.y = _H * 0.5 + 65
     
   
 	function playButton:tap(e)
@@ -146,21 +146,21 @@ function scene:createScene(e)
 	playButton:addEventListener("tap",playButton);
 	
 	function optionButton:tap(e)
-		storyboard.removeScene("shop")
-		storyboard.gotoScene("shop", "fade", 400)
+
 	end
 	
 	optionButton:addEventListener("tap",optionButton);
 	
-	function creditButton:tap(e)
-		storyboard.gotoScene("credit", "fade", 400)
+	function shopButton:tap(e)
+		storyboard.removeScene("shop")
+		storyboard.gotoScene("shop", "fade", 400)
 	end
 	
-	creditButton:addEventListener("tap",creditButton);
+	shopButton:addEventListener("tap",shopButton);
 	
     view:insert(playButton);
     view:insert(optionButton);
-    view:insert(creditButton);
+    view:insert(shopButton);
 end
 
 function scene:enterScene(e)
@@ -195,8 +195,8 @@ function scene:exitScene(e)
 	display.remove(optionButton)
 	optionButton = nil
 	
-	display.remove(creditButton)
-	creditButton = nil
+	display.remove(shopButton)
+	shopButton = nil
 	
 	--playButton:removeEventListener("tap",playButton)
 	--optionButton:removeEventListener("tap",optionButton)
