@@ -365,6 +365,11 @@ local function createDynamicObject()
 				display.getCurrentStage():setFocus(self)
 				self.hasFocus = true
 				
+				aim1.alpha = 0
+				gameInfoText.alpha = 0
+				aim1.xScale=1
+				aim1.yScale=1
+				
 				t.x1 = e.x
                 t.y1 = e.y
 				
@@ -554,11 +559,18 @@ function scene:createScene(e)
 	---------------------------------------
 	
 	 ------------gameInfoText--------------
-    gameInfoText = display.newText(string.format("<-- Drag the ball to left!"),0,0,myFont,10)
-    gameInfoText:setTextColor(255,156,0)
-    gameInfoText.alpha = 0
-    
-    view:insert(gameInfoText)
+	 if mydata.lvl == 1 then
+		 gameInfoText = display.newText(string.format("<-- Drag the ball to left!"),0,0,myFont,10)
+		 gameInfoText:setTextColor(255,156,0)
+		 gameInfoText.alpha = 0
+	elseif mydata.lvl == 2 then	
+		 gameInfoText = display.newText(string.format("<-- Move the object!"),0,0,myFont,10)
+		 gameInfoText:setTextColor(255,156,0)
+		 gameInfoText.alpha = 0
+	else  
+    	 gameInfoText = display.newText(string.format(""),0,0,myFont,10)
+		 view:insert(gameInfoText)
+	end
     
     aim1 = display.newImage( "images/aim.png" )
 	aim1.alpha = 0 
@@ -613,10 +625,9 @@ function scene:createScene(e)
 	view:insert(homeBtn)
 	
 	starGroup = display.newGroup()
-	local font = "HelveticaNeue" or native.systemFont;
-	starTxt = display.newText(string.format("%1dx", #mydata.star),0,0,font,15);
+	starTxt = display.newText(string.format("%1dx", #mydata.star),0,0,myFont,10);
 	starTxt:setTextColor(244,204,34)
-	starTxt.x = _W - 10
+	starTxt.x = _W - 15
 	starTxt.y = _H - 10
 	
 	starsPic = display.newImageRect("images/star2.png",20,20)
@@ -660,7 +671,7 @@ function scene:willEnterScene(e)
 		ball.y = _H * 0.5
 		
 		physics.addBody(ball,"kinematic",{
-			density = 10, friction = 0.5, bounce = 1, radius = 12.5,
+			density = 10, friction = 0.5, bounce = 0.99, radius = 12.5,
 			filter = {
 				categoryBits = 2, --So that the device and ball don't collide with each other
 				maskBits = 1 --So that the ball collides with the ground (which is 1 by default)
@@ -841,7 +852,7 @@ function scene:willEnterScene(e)
 					movingObject[i].y = _H * 0.5 - 100
 					movingObject[i]:rotate(90)	
 				end
-				physics.addBody(movingObject[i],"dynamic",{density = 10, friction = 0, bounce = 1})
+				physics.addBody(movingObject[i],"dynamic",{density = 10, friction = 0.5, bounce = 1})
 			elseif mydata.lvl == 5 then
 				if i == 1 then
 					movingObject[i] = display.newImageRect("images/staticObject.png", 100, 15);
@@ -858,7 +869,7 @@ function scene:willEnterScene(e)
 					movingObject[i].y = _H * 0.3
 					movingObject[i]:rotate(90)	
 				end
-				physics.addBody(movingObject[i],"dynamic",{density = 25, friction = 0.6, bounce = 0.2})
+				physics.addBody(movingObject[i],"dynamic",{density = 25, friction = 0.5, bounce = 0.2})
 			elseif mydata.lvl == 6 then
 				if i == 1 then
 					movingObject[i] = display.newImageRect("images/staticObject.png", 100, 15);
@@ -866,7 +877,7 @@ function scene:willEnterScene(e)
 					movingObject[i].y = _H * 0.5 - 50
 					movingObject[i]:rotate(-45)	
 				end
-				physics.addBody(movingObject[i],"dynamic",{density = 10, friction = 0, bounce = 1})
+				physics.addBody(movingObject[i],"dynamic",{density = 10, friction = 0.5, bounce = 1})
 			end
 			movingObject[i].type = "movingObject"
 			view:insert(movingObject[i])
@@ -952,9 +963,10 @@ function scene:willEnterScene(e)
 		if mydata.lvl == 5 then
 			physics.addBody(staticObject[i],"static",{density = 10, friction = 0.6, bounce = 0.2})
 		else
-			physics.addBody(staticObject[i],"static",{density = 10, friction = 0, bounce = 1})
+			physics.addBody(staticObject[i],"static",{density = 10, friction = 0.5, bounce = 0.5})
 		end
 	end
+
 
 	---------------------------------------------
 	
@@ -964,40 +976,47 @@ end -------------------------------------------- end of willEnterScene
 function scene:enterScene(e)
 	local view = self.view
 	
-	--storyboard.purgeScene("mainMeny")
-	--storyboard.purgeScene("restart")
-	
 	-------------Fade out start text-------------  
 	anim = transition.to(textGroup, {
 	time = 3000, 
 	alpha = 0,
 	onComplete = function()
-		
-		aim1.x = ball.x 
-		aim1.y = ball.y
-		
-		anim1 = transition.to( aim1, { 
-		alpha=0.4, 
-		xScale=0.25, 
-		yScale=0.25, 
-		time=200, 
-		onComplete = function()
-			transition.cancel(anim1)
-			anim1 = nil
+		if mydata.lvl == 1 then
+			aim1.x = ball.x 
+			aim1.y = ball.y
+		elseif mydata.lvl == 2 then
+			aim1.x = dynamicObject[1].x 
+			aim1.y = dynamicObject[1].y
 		end
-		})
+		if mydata.lvl < 3 then
+			anim1 = transition.to( aim1, { 
+			alpha=0.4, 
+			xScale=0.25, 
+			yScale=0.25, 
+			time=200, 
+			onComplete = function()
+				transition.cancel(anim1)
+				anim1 = nil
+			end
+			})
 		
-		gameInfoText.x = ball.x + 100
-		gameInfoText.y = ball.y
+			if mydata.lvl == 1 then
+				gameInfoText.x = ball.x + 100
+				gameInfoText.y = ball.y
+			elseif mydata.lvl == 2 then
+				gameInfoText.x = dynamicObject[1].x + 100
+				gameInfoText.y = dynamicObject[1].y
+			end
 		
-		anim = transition.to(gameInfoText,{
-		time = 200,
-		alpha = 0.8,
-		onComplete = function()
-			transition.cancel(anim)
-			anim = nil
+			anim = transition.to(gameInfoText,{
+			time = 200,
+			alpha = 0.8,
+			onComplete = function()
+				transition.cancel(anim)
+				anim = nil
+			end
+			})
 		end
-		})
 	end
 	})
 	---------------------------------------------

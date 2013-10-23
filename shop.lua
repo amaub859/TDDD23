@@ -95,7 +95,7 @@ local function unlock()
 	background.x = 0	
 	background.y = 0
 	
-	local textOptions = { text = "Morning star", x = 0, y = -70, width = 160, align = "left", font = myFont, fontSize = 20 }
+	local textOptions = { text = "", x = 0, y = -70, width = 160, align = "left", font = myFont, fontSize = 20 }
     title = display.newText(textOptions)
     title:setTextColor(244,204,34)
     
@@ -103,9 +103,14 @@ local function unlock()
     txt = display.newText(textOptions)
     txt:setTextColor(244,204,34)
     frameGroup:insert(txt)
+    
+    local textOptions = { text = "", x = 155, y = 75, width = 160, align = "left", font = myFont, fontSize = 10 }
+    NumberOfStars = display.newText(textOptions)
+    NumberOfStars:setTextColor(244,204,34)
+    frameGroup:insert(NumberOfStars)
 	
 	
-	--star1 = display.newImageRect("images/star2.png",25,25)
+	star = display.newImageRect("images/star2.png",25,25)
 
 	buttonGetNow = display.newImageRect("images/getNowBtn.png",120,40)
 	buttonGetNow:addEventListener("touch",onButtonGetNow)
@@ -117,9 +122,8 @@ local function unlock()
 	buttonExit = display.newImageRect("images/exitBtn.png",20,20)
 	buttonExit:addEventListener("touch",onButtonExit)
 
-	
-	--star1.x = 0
-	--star1.y = 0
+	star.x = 60
+	star.y = 70
 
 	buttonGetNow.x = -23
 	buttonGetNow.y = 70
@@ -132,7 +136,7 @@ local function unlock()
 	
 	frameGroup:insert(background)
 	frameGroup:insert(title)
-	--frameGroup:insert(star1)
+	frameGroup:insert(star)
 	frameGroup:insert(buttonGetNow)
 	frameGroup:insert(buttonBuy)
 	frameGroup:insert(buttonExit)
@@ -177,10 +181,9 @@ function scene:createScene(e)
 	view:insert(homeBtn)
 	
 	starGroup = display.newGroup()
-	local font = "HelveticaNeue" or native.systemFont;
-	starTxt = display.newText(string.format("%1dx", #mydata.star),0,0,font,15);
+	starTxt = display.newText(string.format("%1dx", #mydata.star),0,0,myFont,10)
 	starTxt:setTextColor(244,204,34)
-	starTxt.x = _W - 10
+	starTxt.x = _W - 15
 	starTxt.y = _H - 10
 	
 	starsPic = display.newImageRect("images/star2.png",20,20)
@@ -242,12 +245,14 @@ function scene:enterScene(e)
 					title.text = "Morning star"
 					txt.y = -10
 					txt.text = "Shoot balls horizontally with a strong force"
+					NumberOfStars.text = "0x"
 					locked = 1
 				
 				elseif t.id == "Button2" then
 					title.text = "Evening Star"
 					txt.y = 0
 					txt.text = "Shoots ball horizontally and diagonally with a good precision"
+					NumberOfStars.text = "13x"
 					if #mydata.star >= 13 then
 						locked = 2
 					end	 

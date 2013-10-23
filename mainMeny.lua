@@ -60,11 +60,10 @@ function scene:createScene(e)
 		audio.fade( { channel=1, time=2000, volume=1 } )
 	end
 	
-	local texttop = display.newText("Gravity", 0, 0, myFont,35)
-	texttop:setTextColor(244,204,34)
-	texttop.x = _W * 0.5
-	texttop.y = _H * 0.5 -130 
-	view:insert(texttop);
+	logo = display.newImageRect("images/logo2.png",200,40);
+	logo.x = _W * 0.5;
+	logo.y = _H * 0.5 -125 
+    view:insert(logo);
     
     -------------------------------------------------------
     --Create a button class that will create button objects
@@ -125,7 +124,7 @@ function scene:createScene(e)
 	count = 1
 	local playButton = Button.new()
 	playButton.x = _W * 0.5
-	playButton.y = _H * 0.5 -65
+	playButton.y = _H * 0.5 -60
 	
 	count = 2
 	local optionButton = Button.new()
@@ -135,7 +134,7 @@ function scene:createScene(e)
 	count = 3
 	local shopButton = Button.new()
 	shopButton.x = _W * 0.5
-	shopButton.y = _H * 0.5 + 65
+	shopButton.y = _H * 0.5 + 60
     
   
 	function playButton:tap(e)
@@ -171,8 +170,8 @@ end
 function scene:exitScene(e)
 	--Stop listeners, timers, and animations (transitions)
 	
-	storyboard.purgeScene("mainMeny") --Remove all scene1 display objects
-	
+	storyboard.purgeScene("mainMeny")
+	--[[
 	for i=1 ,#timerId do
 		timer.cancel(timerId[i])
 	end
@@ -196,7 +195,8 @@ function scene:exitScene(e)
 	optionButton = nil
 	
 	display.remove(shopButton)
-	shopButton = nil
+	shopButton = nil]]
+	
 	
 	--playButton:removeEventListener("tap",playButton)
 	--optionButton:removeEventListener("tap",optionButton)

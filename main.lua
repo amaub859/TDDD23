@@ -12,7 +12,7 @@ local storyboard = require("storyboard");--Include the storyboard library
 local mydata = require("mydata")
 
 mydata.lvl = 1
-mydata.lvlUnlocked = 1
+mydata.lvlUnlocked = 6
 mydata.shot = 0
 mydata.restart = 0
 mydata.score = 0

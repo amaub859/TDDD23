@@ -3,7 +3,7 @@ local storyboard = require("storyboard");
 local scene = storyboard.newScene()
 
 --Forward references so that we can access objects accross functions
-local foo;
+local logo;
 local anim;
 local background
 
@@ -11,24 +11,24 @@ function scene:createScene(e)
 
 	local view = self.view
 	
-	background = display.newImageRect("images/background/bg.png",570,360)
+	background = display.newImageRect("images/background/bg.png",_W,_H)
 	background.x = _W * 0.5;
 	background.y = _H * 0.5;
 	
 	local font = "HelveticaNeue" or native.systemFont;
     
     --Remember: this is local to the entire scene (line 6)
-    foo = display.newImageRect("images/logo.png",165,50);
-	foo.x = _W * 0.5 + 30;
-	foo.y = _H * 0.5;
+    logo = display.newImageRect("images/logo.png",165,60);
+	logo.x = _W * 0.5 + 30;
+	logo.y = _H * 0.5;
 	
 	view:insert(background);
-    view:insert(foo);
+    view:insert(logo);
 end
 
 function scene:enterScene(e)
 	
-	anim = transition.to(foo,
+	anim = transition.to(logo,
 	{
 		time = 5000,
 		xScale = 3,
@@ -52,8 +52,10 @@ end
 
 function scene:exitScene(e)
 	--Stop listeners, timers, and animations (transitions)
-	storyboard.purgeScene("IntroLogo")--Remove all scene1 display objects
-	background:removeEventListener("touch", goToNextFrame)
+	
+	storyboard.removeScene("IntroLogo")--Remove all scene1 display objects
+	--background:removeEventListener("touch", goToNextFrame)
+
 end
 
 scene:addEventListener("createScene", scene);

@@ -7,7 +7,7 @@ local mydata = require("mydata")
 local sheetInfo = require("Animation")
 local myImageSheet = graphics.newImageSheet( "images/Animation.png", sheetInfo:getSheet() )
 
-local loadText
+local txtTop
 local numOfLevels = 12;
 local numOfStars = 80
 local animationSprite = {}
@@ -116,11 +116,11 @@ function scene:createScene(e)
 		view:insert(levelButton[i])
 	end
 	
-	loadText = display.newText("Levels", 0, 0, myFont,35)
-	loadText:setTextColor(244,204,34)
-	loadText.x = _W * 0.5
-	loadText.y = _H * 0.5 - 130
-	view:insert(loadText)
+	levelsTxt = display.newImageRect("images/levelsTxt.png",135,40);
+	levelsTxt.x = _W * 0.5;
+	levelsTxt.y = _H * 0.5 - 125
+    view:insert(levelsTxt);
+	
 	
 	homeBtn = display.newImageRect("images/homeBtn.png",40,40)
 	homeBtn.x = _W - 25
@@ -130,10 +130,9 @@ function scene:createScene(e)
 	view:insert(homeBtn)
 	
 	starGroup = display.newGroup()
-	local font = "HelveticaNeue" or native.systemFont;
-	starTxt = display.newText(string.format("%1dx", #mydata.star),0,0,font,15);
+	starTxt = display.newText(string.format("%1dx", #mydata.star),0,0,myFont,10)
 	starTxt:setTextColor(244,204,34)
-	starTxt.x = _W - 10
+	starTxt.x = _W - 15
 	starTxt.y = _H - 10
 	
 	starsPic = display.newImageRect("images/star2.png",20,20)
@@ -157,8 +156,8 @@ function scene:enterScene(e)
 		storyboard.removeScene("mainMeny")
 		storyboard.gotoScene("mainMeny", {time =250, effect="crossFade"})
 	end
-	--loadText.alpha = 1.0
-	--transition.to(loadText, {time=500, alpha=0.0, onComplete=restartLevel})
+	--txtTop.alpha = 1.0
+	--transition.to(txtTop, {time=500, alpha=0.0, onComplete=restartLevel})
 end
 
 function scene:exitScene(e)
